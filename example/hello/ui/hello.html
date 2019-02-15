@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Window</title>
+</head>
+<body>
+<div>
+    <button id="btn">hello</button>
+    <span id="result"></span>
+</div>
+<script src="js/goui.js"></script>
+<script>
+    document.onreadystatechange = function (ev) {
+        if(document.readyState == "complete") {
+            document.getElementById("btn").onclick = function() {
+                goui.request({url: "hello",success: function(data) {
+                        document.getElementById("result").innerText = data;
+                    }});
+            }
+        }
+    }
+</script>
+</body>
+</html>
