@@ -23,7 +23,7 @@ typedef struct WindowSettings{
     int width;
     int height;
     int resizable;
-    int minimizable;
+    int debug;
 } WindowSettings;
 
 

@@ -9,5 +9,5 @@ func main() {
 		context.Success("Hello world!")
 	})
 
-	goui.Create(goui.Settings{"Hello", "./ui/hello.html", 20, 30, 800, 400, true, true})
+	goui.Create(goui.Settings{"Hello", "./ui/hello.html", 20, 30, 300, 200, true, true})
 }

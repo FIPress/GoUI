@@ -11,15 +11,15 @@ package goui
 import (
 	"encoding/json"
 	"path/filepath"
-	"runtime"
+	"strings"
 )
 
-type iWindow interface {
+/*type iWindow interface {
 	create(Settings)
 	exit()
 	activate()
 	invokeJS(string)
-}
+}*/
 
 // Settings is to configure the window's appearance
 type Settings struct {
@@ -52,28 +52,31 @@ type MenuDef struct {
 }
 
 //as goui designed to support only single-page application, it is reasonable to hold a window globally
-var window iWindow
+var w *window
 
 // Create is to create a native window with a webview
 //
 func Create(settings Settings) (err error) {
-	settings.Url, err = filepath.Abs(settings.Url)
+	if !strings.HasSuffix(settings.Url, "http") {
+		settings.Url, err = filepath.Abs(settings.Url)
+		settings.Url = "file://" + settings.Url
+	}
 
 	if err != nil {
 		return
 	}
+	/*
+		switch runtime.GOOS {
+		case "darwin":
+			window = &CocoaWindow{}
+		case "windows":
+			println("windows")
+		default:
+			println("linux")
+		}*/
 
-	switch runtime.GOOS {
-	case "darwin":
-		window = &CocoaWindow{}
-	case "windows":
-		println("windows")
-	default:
-		println("linux")
-	}
-
-	window.create(settings)
-	defer window.exit()
+	w.create(settings)
+	defer w.exit()
 
 	return
 }
@@ -102,7 +105,7 @@ func RequestJSService(options JSServiceOptions) (err error) {
 		return
 	}
 
-	window.invokeJS("goui.handleRequest(" + string(ops) + ")")
+	w.invokeJS("goui.handleRequest(" + string(ops) + ")")
 	return
 }
 

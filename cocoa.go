@@ -1,3 +1,5 @@
+// +build darwin
+
 package goui
 
 /*
@@ -266,25 +268,25 @@ import (
 	"unsafe"
 )
 
-type CocoaWindow struct {
+type window struct {
 }
 
-func (cv *CocoaWindow) create(settings Settings) {
+func (w *window) create(settings Settings) {
 	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
 	cs := toCSettings(settings)
 	C.Create(cs)
 }
 
-func (cv *CocoaWindow) activate() {
+func (w *window) activate() {
 
 }
 
-func (cv *CocoaWindow) invokeJS(js string) {
+func (w *window) invokeJS(js string) {
 	cJs := C.CString(js)
 	defer C.free(unsafe.Pointer(cJs))
 	C.InvokeJS(cJs)
 }
 
-func (cv *CocoaWindow) exit() {
+func (w *window) exit() {
 	C.Exit()
 }

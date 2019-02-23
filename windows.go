@@ -1,38 +1,30 @@
+//+build windows
+
 package goui
 
 //todo: c implementation of linux
 
 import "C"
 
-type windowsWorker struct {
-	Settings
+type window struct {
 }
 
-func (w *windowsWorker) create() {
-	/*C.InitApp()
-
-	cTitle := C.CString(w.Title)
-	defer C.free(unsafe.Pointer(cTitle))
-
-	cUrl := C.CString(w.Url)
-	defer C.free(unsafe.Pointer(cUrl))
-
-	println("url:",w.Url)
-
-	C.CreateWindow(cTitle,cUrl,C.int(w.Width),C.int(w.Height))
-
-	C.ActivateApp()
-
-	for C.Loop() == 0 {}*/
+func (w *window) create(settings Settings) {
+	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
+	cs := toCSettings(settings)
+	C.Create(cs)
 }
 
-func (w *windowsWorker) invokeJS(js string) {
-	/*cJs := C.CString(js)
+func (w *window) activate() {
+
+}
+
+func (w *window) invokeJS(js string) {
+	cJs := C.CString(js)
 	defer C.free(unsafe.Pointer(cJs))
-	C.InvokJS(cJs)*/
+	C.InvokeJS(cJs)
 }
 
-func (w *windowsWorker) exit() {
-	/*println("close cocoa window")
-	C.Exit()*/
+func (w *window) exit() {
+	C.Exit()
 }
