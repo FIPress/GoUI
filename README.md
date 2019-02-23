@@ -126,4 +126,4 @@ On mac:
 ![mac](https://github.com/FIPress/GoUI/blob/master/example/chatbot/screenshots/chatbot-mac.png)
 
 On ubuntu:
-![ubuntu](https://github.com/FIPress/GoUI/blob/master/example/chatbot/screenshots/chatbot-ubuntu.png)
+![ubuntu](https://github.com/FIPress/GoUI/blob/master/example/chatbot/screenshots/chatbot-ubuntu.jpeg)
