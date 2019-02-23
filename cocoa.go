@@ -250,16 +250,16 @@ static GoUIWindow* window;
 }
 @end
 
-void Create(WindowSettings settings) {
+void create(WindowSettings settings) {
 	//[GoUIApp start:settings menuDefs:defs menuSize:8];
 	[GoUIApp start:settings menuDefs:NULL menuSize:0];
 }
 
-void InvokeJS(const char *js) {
+void invokeJS(const char *js) {
 	[GoUIApp evaluateJS:[NSString stringWithUTF8String:js]];
 }
 
-void Exit() {
+void exitApp() {
 	[GoUIApp exit];
 }
 */
@@ -274,7 +274,7 @@ type window struct {
 func (w *window) create(settings Settings) {
 	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
 	cs := toCSettings(settings)
-	C.Create(cs)
+	C.create(cs)
 }
 
 func (w *window) activate() {
@@ -284,9 +284,9 @@ func (w *window) activate() {
 func (w *window) invokeJS(js string) {
 	cJs := C.CString(js)
 	defer C.free(unsafe.Pointer(cJs))
-	C.InvokeJS(cJs)
+	C.invokeJS(cJs)
 }
 
 func (w *window) exit() {
-	C.Exit()
+	C.exitApp()
 }

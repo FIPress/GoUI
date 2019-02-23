@@ -20,7 +20,7 @@ func toCSettings(settings Settings) C.WindowSettings {
 		C.int(settings.Width),
 		C.int(settings.Height),
 		C.int(boolToInt(settings.Resizable)),
-		C.int(boolToInt(settings.Minimizable)),
+		C.int(boolToInt(settings.Debug)),
 	}
 }
 

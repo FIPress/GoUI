@@ -14,9 +14,10 @@
     document.onreadystatechange = function (ev) {
         if(document.readyState == "complete") {
             document.getElementById("btn").onclick = function() {
-                goui.request({url: "hello",success: function(data) {
-                        document.getElementById("result").innerText = data;
-                    }});
+                goui.request({url: "hello",
+                              success: function(data) {
+                                    document.getElementById("result").innerText = data;
+                            }});
             }
         }
     }

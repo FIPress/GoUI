@@ -23,14 +23,14 @@ import (
 
 // Settings is to configure the window's appearance
 type Settings struct {
-	Title       string
-	Url         string
-	Left        int
-	Top         int
-	Width       int
-	Height      int
-	Resizable   bool
-	Minimizable bool
+	Title     string
+	Url       string
+	Left      int
+	Top       int
+	Width     int
+	Height    int
+	Resizable bool
+	Debug     bool
 }
 
 // MenuType is an enum of menu type
