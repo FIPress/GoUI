@@ -122,3 +122,8 @@ goui.request({url: "hello",
 ### chat
 This is an example of a fake chatbot. Please check the code out and run it if you are interested.
 
+On mac:
+![mac](https://github.com/FIPress/GoUI/blob/master/example/chatbot/screenshots/chatbot-mac.png)
+
+On ubuntu:
+![ubuntu](https://github.com/FIPress/GoUI/blob/master/example/chatbot/screenshots/chatbot-ubuntu.png)
