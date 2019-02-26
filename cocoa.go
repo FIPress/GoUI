@@ -46,11 +46,18 @@ static NSDictionary* actionMap;
                  nil];
 }
 
-NSMenuItem* createMenuItem(struct MenuDef def,NSString *title) {
-    NSString *key = @"";
-    if(def.key) {
-        key = [NSString stringWithUTF8String:def.key];
+NSString * utf8(const char* cs) {
+    NSString *ns = @"";
+    if(cs) {
+        ns = [NSString stringWithUTF8String:cs];
     }
+    return ns;
+}
+
+NSMenuItem* createMenuItem(MenuDef def) {
+    NSString *title = utf8(def.title);
+    NSString *key = utf8(def.key);
+
     SEL act = NULL;
     if(def.type == standard) {
         id pointer = [actionMap objectForKey:[NSString stringWithUTF8String:def.action]];
@@ -70,8 +77,41 @@ NSMenuItem* createMenuItem(struct MenuDef def,NSString *title) {
     }
     return item;
 }
-+(void)buildMenu:(struct MenuDef[])defs size: (int)size {
- }
+
+NSMenuItem* createMenu(MenuDef def) {
+    NSString *title = utf8(def.title);
+
+    NSMenu *menu = [[[NSMenu alloc] initWithTitle:title] autorelease];
+    NSMenuItem *item = createMenuItem(def);
+    [item setSubmenu:menu];
+
+    for(int i=0;i<def.childrenCount;i++) {
+        buildSubMenu(menu,def.children[i]);
+    }
+
+    return item;
+}
+
+void buildSubMenu(NSMenu* parent,MenuDef def) {
+    if(def.type == container) {
+        [parent addItem:createMenu(def)];
+    } else if(def.type == separator) {
+        [parent addItem:[NSMenuItem separatorItem]];
+    } else {
+        [parent addItem:createMenuItem(def)];
+    }
+}
+
++(void)buildMenu:(MenuDef[])defs size: (int)size {
+    NSMenu *menubar = [[[NSMenu alloc] initWithTitle:@"menu bar"] autorelease];
+    [NSApp setMainMenu:menubar];
+
+    for(int i=0; i<size;i++) {
+        @autoreleasepool {
+            buildSubMenu(menubar,defs[i]);
+        }
+    }
+}
 @end
 
 //window
@@ -250,9 +290,8 @@ static GoUIWindow* window;
 }
 @end
 
-void create(WindowSettings settings) {
-	//[GoUIApp start:settings menuDefs:defs menuSize:8];
-	[GoUIApp start:settings menuDefs:NULL menuSize:0];
+void create(WindowSettings settings,MenuDef[] menuDefs,int menuSize) {
+	[GoUIApp start:settings menuDefs:menuDefs menuSize:menuSize];
 }
 
 void invokeJS(const char *js) {
@@ -271,10 +310,11 @@ import (
 type window struct {
 }
 
-func (w *window) create(settings Settings) {
+func (w *window) create(settings Settings, menuDefs []MenuDef) {
 	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
 	cs := toCSettings(settings)
-	C.create(cs)
+	cMenuDefs, size := toMenuDefs(menuDefs)
+	C.create(cs, cMenuDefs, size)
 }
 
 func (w *window) activate() {

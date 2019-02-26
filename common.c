@@ -7,10 +7,11 @@ typedef enum MenuType {
 
 typedef struct MenuDef{
     MenuType type;
-    int level;
     const char* title;
     const char* action;
     const char* key;
+    struct MenuDef* children;
+    int childrenCount;
 } MenuDef;
 
 

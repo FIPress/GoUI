@@ -33,24 +33,6 @@ type Settings struct {
 	Debug     bool
 }
 
-// MenuType is an enum of menu type
-type MenuType int
-
-const (
-	Container MenuType = iota //just a container item for sub items
-	Custom
-	Standard
-	Separator
-)
-
-// MenuDef is to define a menu item
-type MenuDef struct {
-	Type   MenuType
-	Action string
-	Title  string
-	Key    string
-}
-
 //as goui designed to support only single-page application, it is reasonable to hold a window globally
 var w *window
 
