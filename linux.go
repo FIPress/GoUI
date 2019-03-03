@@ -11,7 +11,7 @@ package goui
 #include <stdint.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
-#include "common.c"
+#include "bridge.c"
 //#include "_cgo_export.h"
 
 //extern void handleTest();
@@ -127,7 +127,7 @@ type window struct {
 
 func (w *window) create(settings Settings) {
 	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
-	cs := toCSettings(settings)
+	cs := convertSettings(settings)
 
 	C.createWindow(cs)
 }

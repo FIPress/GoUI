@@ -1,5 +1,7 @@
 package goui
 
+import "C"
+
 // MenuType is an enum of menu type
 type MenuType int
 
@@ -16,13 +18,17 @@ type MenuDef struct {
 	Title    string
 	HotKey   string
 	Action   string
+	Handler  func()
 	Children []MenuDef
 }
 
-func AddMenu() {
+var actionMap map[string]func()
 
-}
-
-func SetMenus(defs []MenuDef) {
-
+//export menuClicked
+func menuClicked(action string) {
+	println("menu clicked", action)
+	f := actionMap[action]
+	if f != nil {
+		f()
+	}
 }

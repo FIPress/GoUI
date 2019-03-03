@@ -11,7 +11,7 @@ type window struct {
 
 func (w *window) create(settings Settings) {
 	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
-	cs := toCSettings(settings)
+	cs := convertSettings(settings)
 	C.Create(cs)
 }
 

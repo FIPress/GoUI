@@ -6,15 +6,35 @@ package goui
 #cgo darwin CFLAGS: -x objective-c
 #cgo darwin LDFLAGS: -framework Cocoa -framework WebKit
 
-#include "common.c"
 #include <stdlib.h>
 #include <string.h>
 #include <Cocoa/Cocoa.h>
 #include <mach-o/dyld.h>
 #include <WebKit/WebKit.h>
 #include <objc/runtime.h>
+#include "bridge.c"
 
 extern void handleClientReq(_GoString_ s);
+extern void menuClicked(_GoString_ s);
+extern void goLog(_GoString_ s);
+
+static const int bufSize = 512;
+
+static void logging(const char *format, ...) {
+	char buf[bufSize];
+	va_list args;
+    va_start(args,format);
+	int len = vsnprintf(buf,bufSize, format,args);
+
+	if(len < bufSize) {
+		goLog((_GoString_){buf, len});
+	} else {
+		char tempBuf[len+1];
+		vsnprintf(tempBuf,len+1, format,args);
+		goLog((_GoString_){tempBuf, len});
+	}
+	va_end(args);
+}
 
 //menu
 
@@ -24,7 +44,10 @@ extern void handleClientReq(_GoString_ s);
 @implementation CustomAction
 - (void)action:(id)sender {
     //NSLog(@"click menu:%@",[sender representedObject]);
-    printf("click menu: %s",[[sender representedObject] UTF8String]);
+    const char* str = [[sender representedObject] UTF8String];
+    //menuClicked((_GoString_){str, strlen(str)});
+    menuClicked((_GoString_){str, strlen(str)});
+    logging("click menu: %s\n",str);
 }
 @end
 
@@ -59,19 +82,19 @@ NSMenuItem* createMenuItem(MenuDef def) {
     NSString *key = utf8(def.key);
 
     SEL act = NULL;
-    if(def.type == standard) {
+    if(def.menuType == standard) {
         id pointer = [actionMap objectForKey:[NSString stringWithUTF8String:def.action]];
         if(pointer) {
             act = [pointer pointerValue];
         }
-    } else if(def.type == custom) {
+    } else if(def.menuType == custom) {
         act = @selector(action:);
     }
     NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle:title
                                                    action: act
                                             keyEquivalent:key]
                         autorelease];
-    if(def.type == custom) {
+    if(def.menuType == custom) {
         [item setRepresentedObject:[NSString stringWithUTF8String:def.action]];
         [item setTarget:customAction];
     }
@@ -93,20 +116,22 @@ NSMenuItem* createMenu(MenuDef def) {
 }
 
 void buildSubMenu(NSMenu* parent,MenuDef def) {
-    if(def.type == container) {
+	logging("build menu, type: %d\n",def.menuType);
+    if(def.menuType == container) {
         [parent addItem:createMenu(def)];
-    } else if(def.type == separator) {
+    } else if(def.menuType == separator) {
         [parent addItem:[NSMenuItem separatorItem]];
     } else {
         [parent addItem:createMenuItem(def)];
     }
 }
 
-+(void)buildMenu:(MenuDef[])defs size: (int)size {
++(void)buildMenu:(MenuDef[])defs count: (int)count {
     NSMenu *menubar = [[[NSMenu alloc] initWithTitle:@"menu bar"] autorelease];
     [NSApp setMainMenu:menubar];
 
-    for(int i=0; i<size;i++) {
+	logging("buildMenu count: %d\n",count);
+    for(int i=0; i<count;i++) {
         @autoreleasepool {
             buildSubMenu(menubar,defs[i]);
         }
@@ -122,10 +147,10 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
 @implementation GoUIMessageHandler
 - (void)userContentController:(WKUserContentController *)userContentController
       didReceiveScriptMessage:(WKScriptMessage *)message {
-      printf("didReceiveScriptMessage: %s\n",[message.name UTF8String]);
+      logging("didReceiveScriptMessage: %s\n",[message.name UTF8String]);
     if ([message.name isEqualToString:@"goui"]) {
     	const char* str = [message.body UTF8String];
-        printf("Received event %s\n", str);
+        logging("Received event %s\n", str);
         handleClientReq((_GoString_){str, strlen(str)});
     }
 }
@@ -141,37 +166,37 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
 @implementation WindowDelegate
 @synthesize view = _view;
 - (void)windowDidResize:(NSNotification *)notification {
-    printf("windowDidResize\n");
+    logging("windowDidResize\n");
 }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification{
-    printf("windowDidMiniaturize\n");
+    logging("windowDidMiniaturize\n");
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
-    printf("windowDidEnterFullScreen\n");
+    logging("windowDidEnterFullScreen\n");
 }
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
-    printf("windowDidExitFullScreen\n");
+    logging("windowDidExitFullScreen\n");
 }
 - (void)windowDidBecomeKey:(NSNotification *)notification {
-    printf("Window: become key\n");
+    logging("Window: become key\n");
 }
 
 - (void)windowDidBecomeMain:(NSNotification *)notification {
-    printf("Window: become main\n");
+    logging("Window: become main\n");
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
-    printf("Window: resign key\n");
+    logging("Window: resign key\n");
 }
 
 - (void)windowDidResignMain:(NSNotification *)notification {
-    printf("Window: resign main\n");
+    logging("Window: resign main\n");
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
     [NSAutoreleasePool new];
-    printf("NSWindowDelegate::windowWillClose\n");
+    logging("NSWindowDelegate::windowWillClose\n");
     [NSApp terminate:NSApp];
 }
 @end
@@ -223,7 +248,7 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
 
 -(void) evaluateJS:(NSString*)script {
     [webView evaluateJavaScript:script completionHandler:^(id _Nullable response, NSError * _Nullable error) {
-        //printf("response:%s,error:%s",[response UTF8String],[error UTF8String]);
+        //logging("response:%s,error:%s",[response UTF8String],[error UTF8String]);
     }];
 }
 @end
@@ -232,26 +257,27 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
 @interface ApplicationDelegate : NSObject <NSApplicationDelegate> {
 @private
     MenuDef* _menuDefs;
-    int _menuSize;
+    int _menuCount;
 }
 @property (nonatomic, assign) struct MenuDef* menuDefs;
-@property (assign) int menuSize;
+@property (assign) int menuCount;
 @end
 
 @implementation ApplicationDelegate
 -(void)applicationWillFinishLaunching:(NSNotification *)aNotification
 {
-    printf("applicationWillFinishLaunching\n");
+    logging("applicationWillFinishLaunching\n");
     [NSApplication sharedApplication];
-    if(_menuSize!=0) {
-    	[GoUIMenu buildMenu:_menuDefs size:_menuSize ];
+    logging("_menuCount: %d\n",_menuCount);
+    if(_menuCount!=0) {
+    	[GoUIMenu buildMenu:_menuDefs count:_menuCount ];
     }
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 }
 
 -(void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-	printf("applicationDidFinishLaunching\n");
+	logging("applicationDidFinishLaunching\n");
     [NSApplication sharedApplication];
 
     [NSApp activateIgnoringOtherApps:YES];
@@ -264,20 +290,23 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
 
 @implementation GoUIApp
 static GoUIWindow* window;
+
 +(void)initialize {}
-+(void)start:(WindowSettings)settings menuDefs:(struct MenuDef[])menuDefs menuSize: (int)menuSize {
++(void)start:(WindowSettings)settings menuDefs:(struct MenuDef[])menuDefs menuCount: (int)menuCount {
     @autoreleasepool {
         [NSApplication sharedApplication];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 
         ApplicationDelegate* appDelegate = [[ApplicationDelegate alloc] init];
         appDelegate.menuDefs = menuDefs;
-        appDelegate.menuSize = menuSize;
+        appDelegate.menuCount = menuCount;
+        logging("menuCount: %d\n",menuCount);
         [NSApp setDelegate:appDelegate];
 
         window = [[GoUIWindow alloc] init];
         [window create:settings];
         [NSApp run];
+        //run();
         }
 }
 
@@ -290,8 +319,8 @@ static GoUIWindow* window;
 }
 @end
 
-void create(WindowSettings settings,MenuDef[] menuDefs,int menuSize) {
-	[GoUIApp start:settings menuDefs:menuDefs menuSize:menuSize];
+void create(WindowSettings settings, MenuDef* menuDefs, int menuCount) {
+	[GoUIApp start:settings menuDefs:menuDefs menuCount:menuCount];
 }
 
 void invokeJS(const char *js) {
@@ -312,9 +341,9 @@ type window struct {
 
 func (w *window) create(settings Settings, menuDefs []MenuDef) {
 	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
-	cs := toCSettings(settings)
-	cMenuDefs, size := toMenuDefs(menuDefs)
-	C.create(cs, cMenuDefs, size)
+	cs := convertSettings(settings)
+	cMenuDefs, count := convertMenuDefs(menuDefs)
+	C.create(cs, cMenuDefs, count)
 }
 
 func (w *window) activate() {

@@ -8,6 +8,7 @@
 //
 package goui
 
+import "C"
 import (
 	"encoding/json"
 	"path/filepath"
@@ -39,6 +40,10 @@ var w *window
 // Create is to create a native window with a webview
 //
 func Create(settings Settings) (err error) {
+	return CreateWithMenu(settings, nil)
+}
+
+func CreateWithMenu(settings Settings, menuDefs []MenuDef) (err error) {
 	if !strings.HasSuffix(settings.Url, "http") {
 		settings.Url, err = filepath.Abs(settings.Url)
 		settings.Url = "file://" + settings.Url
@@ -47,20 +52,12 @@ func Create(settings Settings) (err error) {
 	if err != nil {
 		return
 	}
-	/*
-		switch runtime.GOOS {
-		case "darwin":
-			window = &CocoaWindow{}
-		case "windows":
-			println("windows")
-		default:
-			println("linux")
-		}*/
 
-	w.create(settings)
+	w.create(settings, menuDefs)
 	defer w.exit()
 
 	return
+
 }
 
 // Service is to add a backend service for frontend to invoke.
