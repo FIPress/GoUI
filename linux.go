@@ -31,6 +31,83 @@ static int evalJS(const char *js) {
     return 0;
 }
 
+//menu
+typedef void (*actionPtr)(void);
+
+typedef struct Action {
+    actionPtr func;
+    const char* name;
+} Action;
+
+const int actionCount = 1;
+const Action actionMap[] = {
+        {&gtk_main_quit,"quit"}
+};
+
+
+void menuAction(GtkMenuItem *menuitem,
+                gpointer     arg) {
+    fprintf(stderr,"menu clicked:%s\n",(char *)arg);
+    //
+}
+
+void standardMenuAction(GtkMenuItem *menuitem,
+                gpointer     arg) {
+    const char* name = (const char *)arg;
+    fprintf(stderr,"standard menu clicked:%s\n",name);
+
+    for(int i=0;i<actionCount;i++) {
+        Action action = actionMap[i];
+        if(strcmp(name,action.name) ==0 ) {
+            action.func();
+            return;
+        }
+    }
+}
+
+GtkWidget* createMenu(MenuDef menuDef) {
+    GtkWidget* item;
+    switch (menuDef.menuType) {
+        case container: {
+            item = gtk_menu_item_new_with_label (menuDef.title);
+            GtkWidget* menu = gtk_menu_new();
+            for(int i=0;i<menuDef.childrenCount;i++) {
+                GtkWidget* child = createMenu(menuDef.children[i]);
+                gtk_menu_shell_append(GTK_MENU_SHELL (menu), child);
+            }
+            gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), menu);
+            break;
+        }
+        case standard: {
+            item = gtk_menu_item_new_with_label (menuDef.title);
+            g_signal_connect(G_OBJECT(item), "activate",
+                             G_CALLBACK(standardMenuAction), (char *)menuDef.action);
+            break;
+        }
+        case custom: {
+            item = gtk_menu_item_new_with_label (menuDef.title);
+            g_signal_connect(G_OBJECT(item), "activate",
+                             G_CALLBACK(menuAction),(char *) menuDef.action);
+            break;
+        }
+        case separator: {
+            item = gtk_separator_menu_item_new();
+            break;
+        }
+    }
+    return item;
+}
+
+GtkWidget* buildMenu(MenuDef* menuDefs, int count) {
+    GtkWidget* bar = gtk_menu_bar_new ();
+
+    for(int i=0;i<count;i++) {
+        GtkWidget* item = createMenu(menuDefs[i]);
+        gtk_menu_shell_append(GTK_MENU_SHELL(bar), item);
+    }
+
+    return bar;
+}
 
 static void messageReceived(WebKitUserContentManager *manager,
                             WebKitJavascriptResult   *js_result,
@@ -48,7 +125,6 @@ static void messageReceived(WebKitUserContentManager *manager,
         } else {
             fprintf(stderr,"Script result: %s\n", str_value);
             handleClientReq((_GoString_){str_value, strlen(str_value)});
-            //handleTest();
         }
 
         g_free (str_value);
@@ -75,7 +151,7 @@ static void exitApp() {
 	gtk_main_quit();
 }
 
-static int createWindow(WindowSettings settings) {
+static int create(WindowSettings settings,MenuDef* menuDefs,int menuCount) {
     if (gtk_init_check(0, NULL) == FALSE) {
         return -1;
     }
@@ -92,7 +168,14 @@ static int createWindow(WindowSettings settings) {
                      G_CALLBACK(messageReceived), window);
     webview = WEBKIT_WEB_VIEW(webkit_web_view_new_with_user_content_manager(m));
 
-    gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(webview));
+    GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL,1);
+    if(menuCount != 0) {
+        GtkWidget* menuBar = buildMenu(menuDefs,menuCount);
+        gtk_box_pack_start(GTK_BOX(box), menuBar,FALSE,FALSE,0);
+    }
+
+    gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(webview),TRUE,TRUE,0);
+    gtk_container_add(GTK_CONTAINER(window), box);
 
     WebKitSettings *webKitSettings = webkit_web_view_get_settings(webview);
     webkit_settings_set_enable_javascript(webKitSettings,true);
@@ -125,11 +208,11 @@ import "unsafe"
 type window struct {
 }
 
-func (w *window) create(settings Settings) {
+func (w *window) create(settings Settings, menuDefs []MenuDef) {
 	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
 	cs := convertSettings(settings)
-
-	C.createWindow(cs)
+	cMenuDefs, count := convertMenuDefs(menuDefs)
+	C.create(cs, cMenuDefs, count)
 }
 
 func (w *window) activate() {
@@ -144,9 +227,4 @@ func (w *window) invokeJS(js string) {
 
 func (w *window) exit() {
 	C.exitApp()
-}
-
-//export handleTest
-func handleTest() {
-	println("test test")
 }
