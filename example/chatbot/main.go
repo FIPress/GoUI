@@ -16,7 +16,7 @@ const (
 func main() {
 	goui.Service("chat/:msg", chatService)
 
-	goui.Create(goui.Settings{Title: "Chatbot", Url: "./ui/chat.html", Top: 30, Left: 100, Width: 300, Height: 440})
+	goui.Create(goui.Settings{Title: "Chatbot", Top: 30, Left: 100, Width: 300, Height: 440})
 }
 
 func chatService(ctx *goui.Context) {

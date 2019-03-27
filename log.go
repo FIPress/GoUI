@@ -4,8 +4,8 @@ import "C"
 import "fmt"
 
 //export goLog
-func goLog(msg string) {
-	fmt.Println(msg)
+func goLog(msg *C.char) {
+	fmt.Println(C.GoString(msg))
 }
 
 func Log(args ...interface{}) {

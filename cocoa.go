@@ -1,4 +1,5 @@
 // +build darwin
+// +build amd64,!sim
 
 package goui
 
@@ -14,27 +15,26 @@ package goui
 #include <objc/runtime.h>
 #include "bridge.c"
 
-extern void handleClientReq(_GoString_ s);
 extern void menuClicked(_GoString_ s);
-extern void goLog(_GoString_ s);
+extern void handleClientReq(const char* s);
+//extern void goLog(_GoString_ s);
 
-static const int bufSize = 512;
-
-static void logging(const char *format, ...) {
-	char buf[bufSize];
-	va_list args;
-    va_start(args,format);
-	int len = vsnprintf(buf,bufSize, format,args);
-
-	if(len < bufSize) {
-		goLog((_GoString_){buf, len});
-	} else {
-		char tempBuf[len+1];
-		vsnprintf(tempBuf,len+1, format,args);
-		goLog((_GoString_){tempBuf, len});
-	}
-	va_end(args);
+@interface GoUIMessageHandler : NSObject <WKScriptMessageHandler> {
 }
+@end
+
+@implementation GoUIMessageHandler
+- (void)userContentController:(WKUserContentController *)userContentController
+      didReceiveScriptMessage:(WKScriptMessage *)message {
+      logging("didReceiveScriptMessage: %s\n",[message.name UTF8String]);
+    if ([message.name isEqualToString:@"goui"]) {
+    	const char* str = [message.body UTF8String];
+        logging("Received event %s\n", str);
+        handleClientReq(str);
+        //(_GoString_){str, strlen(str)}
+    }
+}
+@end
 
 //menu
 
@@ -140,21 +140,6 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
 @end
 
 //window
-@interface GoUIMessageHandler : NSObject <WKScriptMessageHandler> {
-}
-@end
-
-@implementation GoUIMessageHandler
-- (void)userContentController:(WKUserContentController *)userContentController
-      didReceiveScriptMessage:(WKScriptMessage *)message {
-      logging("didReceiveScriptMessage: %s\n",[message.name UTF8String]);
-    if ([message.name isEqualToString:@"goui"]) {
-    	const char* str = [message.body UTF8String];
-        logging("Received event %s\n", str);
-        handleClientReq((_GoString_){str, strlen(str)});
-    }
-}
-@end
 
 @interface WindowDelegate : NSObject <NSWindowDelegate> {
 @private
@@ -238,15 +223,31 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
 
         webView = [[WKWebView alloc] initWithFrame:rect configuration:configuration];
         [webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
-        NSURL *nsURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:settings.url] isDirectory:false];
-        NSURL *nsDir = [NSURL fileURLWithPath:[NSString stringWithUTF8String:settings.dir] isDirectory:true];
-        [webView loadFileURL:nsURL allowingReadAccessToURL:nsDir];
+        NSString *index = [NSString stringWithUTF8String:settings.index];
+        if([index hasPrefix:@"http"]) {
+        	NSURL *nsURL = [NSURL URLWithString:index];
+        	NSURLRequest *requestObj = [NSURLRequest requestWithURL:nsURL];
+			[webView loadRequest:requestObj];
+        } else {
+			NSString *bundlePath = [[NSBundle mainBundle] resourcePath];
+			NSString *dir = [bundlePath stringByAppendingPathComponent:[NSString stringWithUTF8String:settings.webDir]];
+			index = [dir stringByAppendingPathComponent:index];
+			logging("bundlePath:%s",[bundlePath UTF8String]);
+			logging("dir:%s",[dir UTF8String]);
+			logging("index:%s",[index UTF8String]);
+
+			NSURL *nsURL = [NSURL fileURLWithPath:index isDirectory:false];
+			NSURL *nsDir = [NSURL fileURLWithPath:dir isDirectory:true];
+			[webView loadFileURL:nsURL allowingReadAccessToURL:nsDir];
+		}
+
         [[window contentView] addSubview:webView];
         [window makeKeyAndOrderFront:nil];
     }
 }
 
 -(void) evaluateJS:(NSString*)script {
+    logging("evalue:%s",[script UTF8String]);
     [webView evaluateJavaScript:script completionHandler:^(id _Nullable response, NSError * _Nullable error) {
         //logging("response:%s,error:%s",[response UTF8String],[error UTF8String]);
     }];
@@ -324,6 +325,7 @@ void create(WindowSettings settings, MenuDef* menuDefs, int menuCount) {
 }
 
 void invokeJS(const char *js) {
+	logging("invokeJS:%s",js);
 	[GoUIApp evaluateJS:[NSString stringWithUTF8String:js]];
 }
 
@@ -352,6 +354,7 @@ func (w *window) activate() {
 
 func (w *window) invokeJS(js string) {
 	cJs := C.CString(js)
+	Log("invoke:", js)
 	defer C.free(unsafe.Pointer(cJs))
 	C.invokeJS(cJs)
 }

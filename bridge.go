@@ -6,16 +6,32 @@ package goui
 
 */
 import "C"
-import (
-	"path"
-)
+
+const defaultDir = "web"
+const defaultIndex = "index.html"
 
 func convertSettings(settings Settings) C.WindowSettings {
-	dir := path.Dir(settings.Url)
+	//dir := path.Dir(settings.Url)
+	if settings.WebDir == "" {
+		settings.WebDir = defaultDir
+	}
+
+	if settings.Index == "" {
+		settings.Index = defaultIndex
+	}
+
+	//todo: linux, windows?
+	/*abs := ""
+	if !strings.HasPrefix(settings.Index, "http") {
+		abs, _ = filepath.Abs(settings.WebDir)
+
+		abs = "file://" + abs
+	}*/
 
 	return C.WindowSettings{C.CString(settings.Title),
-		C.CString(settings.Url),
-		C.CString(dir),
+		C.CString(settings.WebDir),
+		//C.CString(abs),
+		C.CString(settings.Index),
 		C.int(settings.Left),
 		C.int(settings.Top),
 		C.int(settings.Width),

@@ -33,7 +33,6 @@ func main() {
 
 	goui.CreateWithMenu(goui.Settings{
 		Title:  "Text Editor",
-		Url:    "./ui/editor.html",
 		Top:    30,
 		Left:   100,
 		Width:  300,

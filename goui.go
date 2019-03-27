@@ -11,8 +11,6 @@ package goui
 import "C"
 import (
 	"encoding/json"
-	"path/filepath"
-	"strings"
 )
 
 /*type iWindow interface {
@@ -24,8 +22,9 @@ import (
 
 // Settings is to configure the window's appearance
 type Settings struct {
-	Title     string
-	Url       string
+	Title     string //Title of the application window
+	WebDir    string //Directory of the web related files, default: "web"
+	Index     string //Index html file, default: "index.html"
 	Left      int
 	Top       int
 	Width     int
@@ -44,15 +43,6 @@ func Create(settings Settings) (err error) {
 }
 
 func CreateWithMenu(settings Settings, menuDefs []MenuDef) (err error) {
-	if !strings.HasSuffix(settings.Url, "http") {
-		settings.Url, err = filepath.Abs(settings.Url)
-		settings.Url = "file://" + settings.Url
-	}
-
-	if err != nil {
-		return
-	}
-
 	w.create(settings, menuDefs)
 	defer w.exit()
 

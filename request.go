@@ -15,7 +15,8 @@ type Request struct {
 var cbMap = make(map[string]func(string))
 
 //export handleClientReq
-func handleClientReq(message string) {
+func handleClientReq(msg *C.char) {
+	message := C.GoString(msg)
 	println("ClientHandler:", message)
 
 	req := new(Request)

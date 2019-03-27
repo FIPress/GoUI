@@ -4,19 +4,30 @@ import (
 	"github.com/fipress/GoUI"
 )
 
+var on = true
+
+func getMsg() string {
+	if on {
+		on = false
+		return "Hello world :-)"
+	} else {
+		on = true
+		return "And hello dear developer :-)"
+	}
+}
+
 func main() {
 	//register a service
 	goui.Service("hello", func(context *goui.Context) {
-		context.Success("Hello world!")
+		context.Success(getMsg())
 	})
 
 	//create and open a window
 	goui.Create(goui.Settings{Title: "Hello",
-		Url:       "./ui/hello.html",
-		Left:      20,
-		Top:       30,
+		Left:      200,
+		Top:       50,
 		Width:     300,
-		Height:    200,
+		Height:    300,
 		Resizable: true,
 		Debug:     true})
 }

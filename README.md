@@ -25,7 +25,7 @@ GoUI has some unique merits compares to other library.
     - **The Logic** With Javascript + Go, you can do anything.  
 
 
-## Usage
+## Basic Usage
 ### The backend - Go
 1. Install the package by `go get`
 ```
@@ -75,6 +75,9 @@ goui.request({url: "hello",
                         document.getElementById("result").innerText = data;
              }});
 ```
+
+### Menu
+
 
 ## Examples
 Under the `example` directory, there are two examples now for you to get started with.
