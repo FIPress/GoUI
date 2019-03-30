@@ -26,8 +26,8 @@ func main() {
 	goui.Create(goui.Settings{Title: "Hello",
 		Left:      200,
 		Top:       50,
-		Width:     300,
-		Height:    300,
+		Width:     400,
+		Height:    510,
 		Resizable: true,
 		Debug:     true})
 }
