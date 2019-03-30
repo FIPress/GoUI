@@ -25,6 +25,7 @@ type Settings struct {
 	Title     string //Title of the application window
 	WebDir    string //Directory of the web related files, default: "web"
 	Index     string //Index html file, default: "index.html"
+	Url       string //Full url address if you don't use WebDir + Index
 	Left      int
 	Top       int
 	Width     int

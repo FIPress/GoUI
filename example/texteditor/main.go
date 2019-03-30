@@ -63,8 +63,8 @@ func main() {
 		Title:  "Text Editor",
 		Top:    30,
 		Left:   100,
-		Width:  430,
-		Height: 450,
+		Width:  320,
+		Height: 400,
 		Debug:  true,
 	},
 		menuDefs)

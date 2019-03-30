@@ -17,6 +17,7 @@ typedef struct WindowSettings{
     const char* webDir;
     //const char* absPath;
     const char* index;
+    const char* url;
     int left;
     int top;
     int width;

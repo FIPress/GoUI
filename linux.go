@@ -156,8 +156,9 @@ static int create(WindowSettings settings,MenuDef* menuDefs,int menuCount) {
         return -1;
     }
     fprintf(stderr, "new window\n");
+    logging("new window");
     GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    fprintf(stderr,"set title load:%s\n",settings.url);
+
     gtk_window_set_title((GtkWindow*)window, settings.title);
     gtk_window_set_position((GtkWindow*)window, GTK_WIN_POS_CENTER);
     gtk_window_set_default_size((GtkWindow*)window, settings.width, settings.height);
@@ -182,6 +183,11 @@ static int create(WindowSettings settings,MenuDef* menuDefs,int menuCount) {
     webkit_settings_set_allow_file_access_from_file_urls(webKitSettings,true);
     webkit_settings_set_allow_universal_access_from_file_urls(webKitSettings,true);
 
+	//char path[255];
+	//strncpy(path, settings.dir, sizeof(path));
+	//strncat(path, settings.index, sizeof(path));
+	//logging("sizeof:%d",sizeof(path));
+	logging("url:%s",settings.url);
     webkit_web_view_load_uri(webview,settings.url);
 
     g_signal_connect(G_OBJECT(webview), "load-changed",
