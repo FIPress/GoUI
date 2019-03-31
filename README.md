@@ -110,6 +110,7 @@ For a complete demonstration, please check out the example "texteditor".
 I personally recommend [GoLand](https://www.jetbrains.com/go) to debug Go code, or IntelliJ IDEA which contains GoLand. You may need to set the output directory to your working folder so that your debugging binary can read the web folder. Or other solution to make sure the binary can read the page you provided.
 
 To debug javascript code or check web page elements, you should set `Debug` settings to `true`, then you can open the inspector from the context menu.
+
 ![Inspector](https://github.com/FIPress/GoUI/raw/master/screenshots/debug-web.png)
 
 ### Packaging
@@ -167,13 +168,13 @@ goui.request({url: "hello",
 Here are some screenshots.
 
 macOS
-![hello-macOS](https://github.com/FIPress/GoUI/raw/master/screenshots/hello-mac.png)
+![hello-macOS](https://github.com/FIPress/GoUI/raw/master/screenshots/hello-mac.jpeg)
 
 Ubuntu
-![hello-ubuntu](https://github.com/FIPress/GoUI/raw/master/screenshots/hello-ubuntu.png)
+![hello-ubuntu](https://github.com/FIPress/GoUI/raw/master/screenshots/hello-ubuntu.jpeg)
 
 iOS
-![hello-ios](https://github.com/FIPress/GoUI/raw/master/screenshots/hello-ios.png) 
+![hello-ios](https://github.com/FIPress/GoUI/raw/master/screenshots/hello-ios.jpeg) 
 
 ### chat
 Demonstrate how backend requests frontend service.
@@ -185,7 +186,7 @@ macOS
 ![editor-macOS](https://github.com/FIPress/GoUI/raw/master/screenshots/editor-mac.png)
 
 Ubuntu
-![editor-ubuntu](https://github.com/FIPress/GoUI/raw/master/screenshots/editor-ubuntu.png)
+![editor-ubuntu](https://github.com/FIPress/GoUI/raw/master/screenshots/editor-ubuntu.jpeg)
 
 ## Progress
 Currently, the basic functions are working on macOS, Ubuntu and iOS. We are working on Windows and Android, and it will be done soon. Then we will start adding features. If you have any suggestion, please don't hesitate to tell us.  
