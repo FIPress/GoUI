@@ -6,15 +6,16 @@ That is, you can write cross-platform applications using JavaScript, HTML and CS
 The basic idea is:
 1. Write your app with HTML, JavaScript, and CSS like it is a single page web application.
     You may adopt whatever javascript framework you like, angular, backbone, etc. 
-2. Wrap the web application to desktop (or mobile in the future) application with GoUI
+2. Wrap the web application to desktop or mobile application.
 3. Plus, write some backend services with Go, then your Javascript code can access them like make an AJAX request
-4. Plus plus, you may also write some frontend services with Javascript for your Go code to access   
+4. Plus plus, you may also write some frontend services with Javascript for your Go code to access.   
 
-GoUI has some unique merits compares to other library.
+That's how GoUI came from. And now, it has some unique merits compares to other library.
 
 1. It provides two way bindings between Go and Javascript. Both sides can register services for the other side to access.
 
-2. Your application won't get too large because you don't need to include Chromium or any other browser into your package, since it uses Cocoa/WebKit for macOS, MSHTML for Windows and Gtk/WebKit for Linux.
+2. Your application won't get too large because you don't need to include Chromium or any other browser into your package, since it uses Cocoa/WebKit for macOS, MSHTML for Windows and Gtk/WebKit for Linux.  
+    The macOS package "hello.app" of example "hello" only takes **2.6MB**. 
 
 3. It is extremely easy To Use. The api is super simple, and intentionally designed adapts to web developers. Register a service is like registering a REST service and request one is like making a jquery AJAX call.
 
@@ -48,27 +49,19 @@ goui.Service("hello", func(context *goui.Context) {
 
 4. Create window with `goui.Create`
 ```
-goui.Create(goui.Settings{"Hello","./ui/test.html",20,30,800,400,true,true})
-```
-
-5. Invoke frontend service by `goui.RequestJSService`
-```
-goui.RequestJSService(goui.JSServiceOptions{
-		Url: "chat/"+msg,
-	})
+goui.Create(goui.Settings{Title: "Hello",
+		Left:      200,
+		Top:       50,
+		Width:     400,
+		Height:    510,
+		Resizable: true,
+		Debug:     true})
 ```
 
 ### The frontend - Javascript
 1. add `goui.js` in your web page
 
-2. Register services with `goui.service`
-```
-goui.service("chat/:msg",function(msg) {
-    $box.append('<div class="bot"><div><b class="avatar">B</b></div><div><div class="msg">' + msg + '</div></div</div>')
- })
-```
-
-3. request backend services
+2. request backend services
 ```
 goui.request({url: "hello",
             success: function(data) {
@@ -76,11 +69,54 @@ goui.request({url: "hello",
              }});
 ```
 
-### Menu
+### The backend can access frontend services
 
+1. The frontend register services with `goui.service`
+   ```
+   goui.service("chat/:msg",function() {
+        console.log(msg);
+   })
+   ```  
+
+2. The backend invoke frontend service by `goui.RequestJSService` 
+```
+goui.RequestJSService(goui.JSServiceOptions{
+		Url: "chat/"+msg,
+	})
+```
+
+### Menu
+It is extremely easy to create menu with GoUI: just define your menuDefs, and create window with them,
+
+```
+menuDefs = []goui.MenuDef{{Title: "File", Type: goui.Container, Children: []goui.MenuDef{
+			{Title: "New", Type: goui.Custom, Action: "new", Handler: func() {
+				println("new file")
+			}},
+			{Title: "Open", Type: goui.Custom, Action: "open"},
+			{Type: goui.Separator},
+			{Title: "Quit", Type: goui.Standard, Action: "quit"},
+			...
+			}
+		}
+		
+goui.CreateWithMenu(settings,menuDefs)
+``` 
+
+For a complete demonstration, please check out the example "texteditor".
+
+## Debugging and packaging
+### Debugging
+I personally recommend [GoLand](https://www.jetbrains.com/go) to debug Go code, or IntelliJ IDEA which contains GoLand. You may need to set the output directory to your working folder so that your debugging binary can read the web folder. Or other solution to make sure the binary can read the page you provided.
+
+To debug javascript code or check web page elements, you should set `Debug` settings to `true`, then you can open the inspector from the context menu.
+![Inspector](https://github.com/FIPress/GoUI/raw/master/screenshots/debug-web.png)
+
+### Packaging
+The easiest way to package GoUI applications would be through [GoUI-CLI](https://github.com/FIPress/GoUI-CLI), which will packaging native applications for all the supported platforms, macOS, Ubuntu, Windows, iOS and Android.
 
 ## Examples
-Under the `example` directory, there are two examples now for you to get started with.
+Under the `example` directory, there are some examples for you to get started with.
 
 ### hello
 This is the GoUI version of "Hello world". It's pretty much a starting point for you to go, so let's take a look at it in detail. 
@@ -88,16 +124,21 @@ This is the GoUI version of "Hello world". It's pretty much a starting point for
 The project only contains 3 files.
 
 ```
-  ├─ui
+  ├─web
+  | ├─css
+  | |  └─index.css
+  | ├─img
+  | |  └─goui.png
   | ├─js
   | |  └─goui.js 
-  | └─hello.html
-  └─hello.go
+  | |  └─index.js
+  | └─index.html
+  └─main.go
 ```
 
-`goui.js` - The library GoUI provides for you.
+`goui.js` - The frontend library GoUI provides for you.
 
-`hello.go` - provides a service named `hello`, and then create a window.
+`main.go` - provides a service named `hello`, and then create a window.
 ```
 goui.Service("hello", func(context *goui.Context) {
 		context.Success("Hello world!")
@@ -114,7 +155,8 @@ goui.Service("hello", func(context *goui.Context) {
 		Debug:     true})
 ```
 
-`hello.html` - has a button on it, if a user clicks the button, it will request the above `hello` service.
+`index.html` - has a button on it, if a user clicks the button, it will request the above `hello` service.
+`index.js` - frontend logic of `index.html`.
 ```
 goui.request({url: "hello",
               success: function(data) {
@@ -122,11 +164,28 @@ goui.request({url: "hello",
              }});
 ```
 
+Here are some screenshots.
+
+macOS
+![hello-macOS](https://github.com/FIPress/GoUI/raw/master/screenshots/hello-mac.png)
+
+Ubuntu
+![hello-ubuntu](https://github.com/FIPress/GoUI/raw/master/screenshots/hello-ubuntu.png)
+
+iOS
+![hello-ios](https://github.com/FIPress/GoUI/raw/master/screenshots/hello-ios.png) 
+
 ### chat
-This is an example of a fake chatbot. Please check the code out and run it if you are interested.
+Demonstrate how backend requests frontend service.
 
-- mac  
-![mac](https://github.com/FIPress/GoUI/blob/master/example/chatbot/screenshots/chatbot-mac.png)
+### texteditor
+Demonstrate how to setup menu for desktop applications, on macOS, ubuntu and windows.
 
-- ubuntu  
-![ubuntu](https://github.com/FIPress/GoUI/blob/master/example/chatbot/screenshots/chatbot-ubuntu.jpeg)
+macOS
+![editor-macOS](https://github.com/FIPress/GoUI/raw/master/screenshots/editor-mac.png)
+
+Ubuntu
+![editor-ubuntu](https://github.com/FIPress/GoUI/raw/master/screenshots/editor-ubuntu.png)
+
+## Progress
+Currently, the basic functions are working on macOS, Ubuntu and iOS. We are working on Windows and Android, and it will be done soon. Then we will start adding features. If you have any suggestion, please don't hesitate to tell us.  
