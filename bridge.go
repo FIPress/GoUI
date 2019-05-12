@@ -25,9 +25,13 @@ func convertSettings(settings Settings) C.WindowSettings {
 		settings.Index = defaultIndex
 	}
 
-	if settings.Url == "" && runtime.GOOS == "linux" {
-		wd, _ := os.Getwd()
-		settings.Url = path.Join("file://", wd, settings.WebDir, settings.Index)
+	if settings.Url == "" {
+		if runtime.GOOS == "linux" {
+			wd, _ := os.Getwd()
+			settings.Url = path.Join("file://", wd, settings.WebDir, settings.Index)
+		} else if runtime.GOOS == "android" {
+			settings.Url = path.Join("file:///android_asset/", settings.WebDir, settings.Index)
+		}
 	}
 
 	//todo: linux, windows?

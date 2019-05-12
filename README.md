@@ -1,5 +1,7 @@
 # GoUI
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/FIPress/GoUI)](https://goreportcard.com/report/github.com/FIPress/GoUI)
+
 [GoUI](https://fipress.org/project/goui) is a lightweight cross-platform Go "GUI" framework. It is not really a *GUI* library, instead, it displays things through web view. 
 That is, you can write cross-platform applications using JavaScript, HTML and CSS, and Go of cause. 
 
@@ -113,6 +115,11 @@ To debug javascript code or check web page elements, you should set `Debug` sett
 
 ![Inspector](https://github.com/FIPress/GoUI/raw/master/screenshots/debug-web.png)
 
+**Note**
+You may use remote debugging of Safari or Chrome to debug iOS or Android web page.
+
+![Inspector](https://github.com/FIPress/GoUI/raw/master/screenshots/debug-web-android.png)
+
 ### Packaging
 The easiest way to package GoUI applications would be through [GoUI-CLI](https://github.com/FIPress/GoUI-CLI), which will packaging native applications for all the supported platforms, macOS, Ubuntu, Windows, iOS and Android.
 
@@ -176,6 +183,9 @@ Ubuntu
 iOS
 ![hello-ios](https://github.com/FIPress/GoUI/raw/master/screenshots/hello-ios.jpeg) 
 
+Android
+![hello-android](https://github.com/FIPress/GoUI/raw/master/screenshots/hello-android.jpeg)
+
 ### chat
 Demonstrate how backend requests frontend service.
 
@@ -189,4 +199,4 @@ Ubuntu
 ![editor-ubuntu](https://github.com/FIPress/GoUI/raw/master/screenshots/editor-ubuntu.jpeg)
 
 ## Progress
-Currently, the basic functions are working on macOS, Ubuntu and iOS. We are working on Windows and Android, and it will be done soon. Then we will start adding features. If you have any suggestion, please don't hesitate to tell us.  
+Currently, the basic functions are working on macOS, Ubuntu, iOS and Android. We are working on Windows now, and it will be done soon. Then we will start adding features. If you have any suggestion, please don't hesitate to tell us.  

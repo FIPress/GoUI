@@ -24,10 +24,10 @@ extern void handleClientReq(const char* s);
 @implementation GoUIMessageHandler
 - (void)userContentController:(WKUserContentController *)userContentController
       didReceiveScriptMessage:(WKScriptMessage *)message {
-      logging("didReceiveScriptMessage: %s\n",[message.name UTF8String]);
+      logf("didReceiveScriptMessage: %s\n",[message.name UTF8String]);
     if ([message.name isEqualToString:@"goui"]) {
     	const char* str = [message.body UTF8String];
-        logging("Received event %s\n", str);
+        logf("Received event %s\n", str);
         handleClientReq(str);
         //(_GoString_){str, strlen(str)}
     }
@@ -124,7 +124,7 @@ void create() {
 
 void invokeJS(const char *js) {
 	[webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:^(id _Nullable response, NSError * _Nullable error) {
-        //logging("response:%s,error:%s",[response UTF8String],[error UTF8String]);
+        //logf("response:%s,error:%s",[response UTF8String],[error UTF8String]);
     }];
 }
 

@@ -31,8 +31,8 @@ window.goui = (function() {
                 }
                 if (window.webkit) {
                     window.webkit.messageHandlers.goui.postMessage(data);
-                } else if (1==2){
-                    //todo: windows
+                } else if (window.gouiHandler){
+                    window.gouiHandler.handleMessage(data);
                 } else {
                     //todo: linux
                 }

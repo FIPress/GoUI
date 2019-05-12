@@ -17,7 +17,7 @@ var cbMap = make(map[string]func(string))
 //export handleClientReq
 func handleClientReq(msg *C.char) {
 	message := C.GoString(msg)
-	println("ClientHandler:", message)
+	Log("ClientHandler:", message)
 
 	req := new(Request)
 	err := json.Unmarshal([]byte(message), req)

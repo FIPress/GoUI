@@ -1,4 +1,4 @@
-// +build linux
+// +build linux,!android
 
 package goui
 
@@ -156,7 +156,7 @@ static int create(WindowSettings settings,MenuDef* menuDefs,int menuCount) {
         return -1;
     }
     fprintf(stderr, "new window\n");
-    logging("new window");
+    logf("new window");
     GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     gtk_window_set_title((GtkWindow*)window, settings.title);
@@ -186,8 +186,8 @@ static int create(WindowSettings settings,MenuDef* menuDefs,int menuCount) {
 	//char path[255];
 	//strncpy(path, settings.dir, sizeof(path));
 	//strncat(path, settings.index, sizeof(path));
-	//logging("sizeof:%d",sizeof(path));
-	logging("url:%s",settings.url);
+	//logf("sizeof:%d",sizeof(path));
+	logf("url:%s",settings.url);
     webkit_web_view_load_uri(webview,settings.url);
 
     g_signal_connect(G_OBJECT(webview), "load-changed",

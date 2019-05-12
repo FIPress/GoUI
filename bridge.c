@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+//#include "_cgo_export.h"
 
 typedef enum MenuType {
     container, //just a container item for sub items
@@ -50,7 +51,7 @@ static void addChildMenu(MenuDef* children, MenuDef child, int index) {
 extern void goLog(const char *s);
 static const int bufSize = 512;
 
-static void logging(const char *format, ...) {
+static void logf(const char *format, ...) {
 	char buf[bufSize];
 	va_list args;
     va_start(args,format);

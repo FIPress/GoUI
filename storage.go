@@ -33,11 +33,11 @@ func (s *storage) Put(key string, v interface{}) {
 }
 
 func (s *storage) GetInt(key string) int {
-	return s.store.GetInt(key, 0)
+	return s.store.GetInt(key)
 }
 
 func (s *storage) GetString(key string) string {
-	return s.store.GetString(key, "")
+	return s.store.GetString(key)
 }
 
 func (s *storage) PutStruct(key string, v interface{}) (err error) {
@@ -52,7 +52,7 @@ func (s *storage) PutStruct(key string, v interface{}) (err error) {
 }
 
 func (s *storage) GetStruct(key string, v interface{}) (err error) {
-	str := s.store.GetString(key, "")
+	str := s.store.GetString(key)
 	if str != "" {
 		err = json.Unmarshal([]byte(str), v)
 		if err != nil {
