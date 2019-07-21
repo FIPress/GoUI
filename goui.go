@@ -35,7 +35,6 @@ type Settings struct {
 }
 
 //as goui designed to support only single-page application, it is reasonable to hold a window globally
-var w *window
 
 // Create is to create a native window with a webview
 //
@@ -44,11 +43,10 @@ func Create(settings Settings) (err error) {
 }
 
 func CreateWithMenu(settings Settings, menuDefs []MenuDef) (err error) {
-	w.create(settings, menuDefs)
-	defer w.exit()
+	create(settings, menuDefs)
+	defer exit()
 
 	return
-
 }
 
 // Service is to add a backend service for frontend to invoke.
@@ -75,7 +73,7 @@ func RequestJSService(options JSServiceOptions) (err error) {
 		return
 	}
 
-	w.invokeJS("goui.handleRequest(" + string(ops) + ")")
+	invokeJS("goui.handleRequest(" + string(ops) + ")")
 	return
 }
 

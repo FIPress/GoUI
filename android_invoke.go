@@ -4,7 +4,7 @@
 package goui
 
 import "C"
-import "github.com/fipress/GoUI/invoke"
+import "github.com/fipress/GoUI/provider_android_invoke"
 
 //export invokeMain
 func invokeMain(ptr uintptr) {

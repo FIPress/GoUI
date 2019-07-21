@@ -2,7 +2,7 @@ package goui
 
 /*
 #include <stdlib.h>
-#include "bridge.c"
+#include "provider.h"
 
 */
 import "C"
@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"unsafe"
 )
 
 const defaultDir = "web"
@@ -26,11 +27,12 @@ func convertSettings(settings Settings) C.WindowSettings {
 	}
 
 	if settings.Url == "" {
+		settings.Url = path.Join(settings.WebDir, settings.Index)
 		if runtime.GOOS == "linux" {
 			wd, _ := os.Getwd()
-			settings.Url = path.Join("file://", wd, settings.WebDir, settings.Index)
+			settings.Url = path.Join("file://", wd, settings.Url)
 		} else if runtime.GOOS == "android" {
-			settings.Url = path.Join("file:///android_asset/", settings.WebDir, settings.Index)
+			settings.Url = path.Join("file:///android_asset/", settings.Url)
 		}
 	}
 
@@ -90,4 +92,26 @@ func boolToInt(b bool) (i int) {
 		i = 1
 	}
 	return
+}
+
+func create(settings Settings, menuDefs []MenuDef) {
+	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
+	cs := convertSettings(settings)
+	cMenuDefs, count := convertMenuDefs(menuDefs)
+	createApp(cs, cMenuDefs, count)
+}
+
+func activate() {
+
+}
+
+func invokeJS(js string) {
+	cJs := C.CString(js)
+	Log("invoke:", js)
+	defer C.free(unsafe.Pointer(cJs))
+	invokeAppJS(cJs)
+}
+
+func exit() {
+	exitApp()
 }

@@ -55,9 +55,9 @@ func (ctx *Context) GetEntity(v interface{}) (err error) {
 func (ctx *Context) Success(feedback interface{}) {
 	if ctx.SuccessCallback != "" {
 		if feedback == nil {
-			w.invokeJS(ctx.SuccessCallback + "()")
+			invokeJS(ctx.SuccessCallback + "()")
 		} else {
-			w.invokeJS(fmt.Sprintf("%s('%v')", ctx.SuccessCallback, feedback))
+			invokeJS(fmt.Sprintf("%s('%v')", ctx.SuccessCallback, feedback))
 		}
 	}
 }
@@ -65,9 +65,9 @@ func (ctx *Context) Success(feedback interface{}) {
 func (ctx *Context) Error(err interface{}) {
 	if ctx.ErrorCallback != "" {
 		if err == nil {
-			w.invokeJS(ctx.ErrorCallback + "()")
+			invokeJS(ctx.ErrorCallback + "()")
 		} else {
-			w.invokeJS(fmt.Sprintf("%s('%v')", ctx.ErrorCallback, err))
+			invokeJS(fmt.Sprintf("%s('%v')", ctx.ErrorCallback, err))
 		}
 	}
 }

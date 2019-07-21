@@ -7,7 +7,7 @@ import "fmt"
 
 //export goLog
 func goLog(msg *C.char) {
-	fmt.Println(C.GoString(msg))
+	go fmt.Println("go log: ", C.GoString(msg))
 }
 
 func Log(args ...interface{}) {
