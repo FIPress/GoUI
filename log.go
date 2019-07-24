@@ -11,9 +11,9 @@ func goLog(msg *C.char) {
 }
 
 func Log(args ...interface{}) {
-	fmt.Print(args...)
+	go fmt.Print(args...)
 }
 
 func Logf(format string, args ...interface{}) {
-	fmt.Printf(format, args...)
+	go fmt.Printf(format, args...)
 }

@@ -3,7 +3,7 @@
 
 // Package invoke is for invoking main.main
 //
-package invoke
+package provider_android_invoke
 
 // InvokeMain calls main.main by its address.
 func InvokeMain(ptr uintptr)

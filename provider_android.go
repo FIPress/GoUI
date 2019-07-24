@@ -10,7 +10,7 @@ package goui
 #include <dlfcn.h>
 #include <stdio.h>
 #include <android/log.h>
-#include "bridge.c"
+#include "provider.h"
 
 #define loge(...) __android_log_print(ANDROID_LOG_ERROR, "GoUI", __VA_ARGS__);
 #define logd(...) __android_log_print(ANDROID_LOG_DEBUG, "GoUI", __VA_ARGS__);
@@ -97,36 +97,28 @@ void exitApp() {
 */
 import "C"
 import (
-	"fmt"
 	"unsafe"
 )
 
-type window struct {
-}
-
-func (w *window) create(settings Settings, menuDefs []MenuDef) {
-	cs := convertSettings(settings)
+func cCreate(cs C.WindowSettings, cMenuDefs *C.MenuDef, count C.int) {
 	C.create(cs)
 }
 
-func (w *window) activate() {
+func cActivate() {
 
 }
 
-func (w *window) invokeJS(js string) {
-	cJs := C.CString(js)
-	Log("go invoke:" + js)
-	defer C.free(unsafe.Pointer(cJs))
-	C.invokeJS(cJs)
+func cInvokeJS(js *C.char) {
+	C.invokeJS(js)
 }
 
-func (w *window) exit() {
+func cExit() {
 	C.exitApp()
 }
 
 func Log(arg ...interface{}) {
-	msg := fmt.Sprint(arg...)
 	go func() {
+		msg := fmt.Sprint(arg...)
 		cMsg := C.CString(msg)
 		defer C.free(unsafe.Pointer(cMsg))
 		C.alogd(cMsg)

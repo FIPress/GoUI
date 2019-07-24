@@ -13,7 +13,7 @@ package goui
 #include <mach-o/dyld.h>
 #include <WebKit/WebKit.h>
 #include <objc/runtime.h>
-#include "bridge.c"
+#include "provider.h"
 
 extern void menuClicked(_GoString_ s);
 extern void handleClientReq(const char* s);
@@ -26,10 +26,10 @@ extern void handleClientReq(const char* s);
 @implementation GoUIMessageHandler
 - (void)userContentController:(WKUserContentController *)userContentController
       didReceiveScriptMessage:(WKScriptMessage *)message {
-      logf("didReceiveScriptMessage: %s\n",[message.name UTF8String]);
+      goUILog("didReceiveScriptMessage: %s\n",[message.name UTF8String]);
     if ([message.name isEqualToString:@"goui"]) {
     	const char* str = [message.body UTF8String];
-        logf("Received event %s\n", str);
+        goUILog("Received event %s\n", str);
         handleClientReq(str);
         //(_GoString_){str, strlen(str)}
     }
@@ -47,7 +47,7 @@ extern void handleClientReq(const char* s);
     const char* str = [[sender representedObject] UTF8String];
     //menuClicked((_GoString_){str, strlen(str)});
     menuClicked((_GoString_){str, strlen(str)});
-    logf("click menu: %s\n",str);
+    goUILog("click menu: %s\n",str);
 }
 @end
 
@@ -116,7 +116,7 @@ NSMenuItem* createMenu(MenuDef def) {
 }
 
 void buildSubMenu(NSMenu* parent,MenuDef def) {
-	logf("build menu, type: %d\n",def.menuType);
+	goUILog("build menu, type: %d\n",def.menuType);
     if(def.menuType == container) {
         [parent addItem:createMenu(def)];
     } else if(def.menuType == separator) {
@@ -130,7 +130,7 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
     NSMenu *menubar = [[[NSMenu alloc] initWithTitle:@"menu bar"] autorelease];
     [NSApp setMainMenu:menubar];
 
-	logf("buildMenu count: %d\n",count);
+	goUILog("buildMenu count: %d\n",count);
     for(int i=0; i<count;i++) {
         @autoreleasepool {
             buildSubMenu(menubar,defs[i]);
@@ -151,37 +151,37 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
 @implementation WindowDelegate
 @synthesize view = _view;
 - (void)windowDidResize:(NSNotification *)notification {
-    logf("windowDidResize\n");
+    goUILog("windowDidResize\n");
 }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification{
-    logf("windowDidMiniaturize\n");
+    goUILog("windowDidMiniaturize\n");
 }
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
-    logf("windowDidEnterFullScreen\n");
+    goUILog("windowDidEnterFullScreen\n");
 }
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
-    logf("windowDidExitFullScreen\n");
+    goUILog("windowDidExitFullScreen\n");
 }
 - (void)windowDidBecomeKey:(NSNotification *)notification {
-    logf("Window: become key\n");
+    goUILog("Window: become key\n");
 }
 
 - (void)windowDidBecomeMain:(NSNotification *)notification {
-    logf("Window: become main\n");
+    goUILog("Window: become main\n");
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
-    logf("Window: resign key\n");
+    goUILog("Window: resign key\n");
 }
 
 - (void)windowDidResignMain:(NSNotification *)notification {
-    logf("Window: resign main\n");
+    goUILog("Window: resign main\n");
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
     [NSAutoreleasePool new];
-    logf("NSWindowDelegate::windowWillClose\n");
+    goUILog("NSWindowDelegate::windowWillClose\n");
     [NSApp terminate:NSApp];
 }
 @end
@@ -232,9 +232,9 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
 			NSString *bundlePath = [[NSBundle mainBundle] resourcePath];
 			NSString *dir = [bundlePath stringByAppendingPathComponent:[NSString stringWithUTF8String:settings.webDir]];
 			index = [dir stringByAppendingPathComponent:index];
-			logf("bundlePath:%s",[bundlePath UTF8String]);
-			logf("dir:%s",[dir UTF8String]);
-			logf("index:%s",[index UTF8String]);
+			goUILog("bundlePath:%s",[bundlePath UTF8String]);
+			goUILog("dir:%s",[dir UTF8String]);
+			goUILog("index:%s",[index UTF8String]);
 
 			NSURL *nsURL = [NSURL fileURLWithPath:index isDirectory:false];
 			NSURL *nsDir = [NSURL fileURLWithPath:dir isDirectory:true];
@@ -247,9 +247,9 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
 }
 
 -(void) evaluateJS:(NSString*)script {
-    logf("evalue:%s",[script UTF8String]);
+    goUILog("evalue:%s",[script UTF8String]);
     [webView evaluateJavaScript:script completionHandler:^(id _Nullable response, NSError * _Nullable error) {
-        //logf("response:%s,error:%s",[response UTF8String],[error UTF8String]);
+        //goUILog("response:%s,error:%s",[response UTF8String],[error UTF8String]);
     }];
 }
 @end
@@ -267,9 +267,9 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
 @implementation ApplicationDelegate
 -(void)applicationWillFinishLaunching:(NSNotification *)aNotification
 {
-    logf("applicationWillFinishLaunching\n");
+    goUILog("applicationWillFinishLaunching\n");
     [NSApplication sharedApplication];
-    logf("_menuCount: %d\n",_menuCount);
+    goUILog("_menuCount: %d\n",_menuCount);
     if(_menuCount!=0) {
     	[GoUIMenu buildMenu:_menuDefs count:_menuCount ];
     }
@@ -278,7 +278,7 @@ void buildSubMenu(NSMenu* parent,MenuDef def) {
 
 -(void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-	logf("applicationDidFinishLaunching\n");
+	goUILog("applicationDidFinishLaunching\n");
     [NSApplication sharedApplication];
 
     [NSApp activateIgnoringOtherApps:YES];
@@ -301,7 +301,7 @@ static GoUIWindow* window;
         ApplicationDelegate* appDelegate = [[ApplicationDelegate alloc] init];
         appDelegate.menuDefs = menuDefs;
         appDelegate.menuCount = menuCount;
-        logf("menuCount: %d\n",menuCount);
+        goUILog("menuCount: %d\n",menuCount);
         [NSApp setDelegate:appDelegate];
 
         window = [[GoUIWindow alloc] init];
@@ -325,7 +325,7 @@ void create(WindowSettings settings, MenuDef* menuDefs, int menuCount) {
 }
 
 void invokeJS(const char *js) {
-	logf("invokeJS:%s",js);
+	goUILog("invokeJS:%s",js);
 	[GoUIApp evaluateJS:[NSString stringWithUTF8String:js]];
 }
 
@@ -334,31 +334,19 @@ void exitApp() {
 }
 */
 import "C"
-import (
-	"unsafe"
-)
 
-type window struct {
-}
-
-func (w *window) create(settings Settings, menuDefs []MenuDef) {
-	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
-	cs := convertSettings(settings)
-	cMenuDefs, count := convertMenuDefs(menuDefs)
+func cCreate(cs C.WindowSettings, cMenuDefs *C.MenuDef, count C.int) {
 	C.create(cs, cMenuDefs, count)
 }
 
-func (w *window) activate() {
+func cActivate() {
 
 }
 
-func (w *window) invokeJS(js string) {
-	cJs := C.CString(js)
-	Log("invoke:", js)
-	defer C.free(unsafe.Pointer(cJs))
-	C.invokeJS(cJs)
+func cInvokeJS(js *C.char) {
+	C.invokeJS(js)
 }
 
-func (w *window) exit() {
+func cExit() {
 	C.exitApp()
 }

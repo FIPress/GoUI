@@ -12,7 +12,7 @@ package goui
 #import <UIKit/UIKit.h>
 #include <WebKit/WebKit.h>
 #include <objc/runtime.h>
-#include "bridge.c"
+#include "provider.h"
 
 extern void handleClientReq(const char* s);
 //extern void goLog(_GoString_ s);
@@ -24,10 +24,10 @@ extern void handleClientReq(const char* s);
 @implementation GoUIMessageHandler
 - (void)userContentController:(WKUserContentController *)userContentController
       didReceiveScriptMessage:(WKScriptMessage *)message {
-      logf("didReceiveScriptMessage: %s\n",[message.name UTF8String]);
+      goUILog("didReceiveScriptMessage: %s\n",[message.name UTF8String]);
     if ([message.name isEqualToString:@"goui"]) {
     	const char* str = [message.body UTF8String];
-        logf("Received event %s\n", str);
+        goUILog("Received event %s\n", str);
         handleClientReq(str);
         //(_GoString_){str, strlen(str)}
     }
@@ -124,7 +124,7 @@ void create() {
 
 void invokeJS(const char *js) {
 	[webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:^(id _Nullable response, NSError * _Nullable error) {
-        //logf("response:%s,error:%s",[response UTF8String],[error UTF8String]);
+        //goUILog("response:%s,error:%s",[response UTF8String],[error UTF8String]);
     }];
 }
 
@@ -133,28 +133,20 @@ void exitApp() {
 }
 */
 import "C"
-import (
-	"unsafe"
-)
 
-type window struct {
-}
-
-func (w *window) create(settings Settings, menuDefs []MenuDef) {
+func cCreate(cs C.WindowSettings, cMenuDefs *C.MenuDef, count C.int) {
 	//cs := convertSettings(settings)
 	C.create()
 }
 
-func (w *window) activate() {
+func cActivate() {
 
 }
 
-func (w *window) invokeJS(js string) {
-	cJs := C.CString(js)
-	defer C.free(unsafe.Pointer(cJs))
-	C.invokeJS(cJs)
+func cInvokeJS(js *C.char) {
+	C.invokeJS(js)
 }
 
-func (w *window) exit() {
+func cExit() {
 	//not supported
 }

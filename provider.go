@@ -98,7 +98,7 @@ func create(settings Settings, menuDefs []MenuDef) {
 	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
 	cs := convertSettings(settings)
 	cMenuDefs, count := convertMenuDefs(menuDefs)
-	createApp(cs, cMenuDefs, count)
+	cCreate(cs, cMenuDefs, count)
 }
 
 func activate() {
@@ -109,9 +109,9 @@ func invokeJS(js string) {
 	cJs := C.CString(js)
 	Log("invoke:", js)
 	defer C.free(unsafe.Pointer(cJs))
-	invokeAppJS(cJs)
+	cInvokeJS(cJs)
 }
 
 func exit() {
-	exitApp()
+	cExit()
 }

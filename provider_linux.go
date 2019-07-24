@@ -11,7 +11,7 @@ package goui
 #include <stdint.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
-#include "bridge.c"
+#include "provider.h"
 //#include "_cgo_export.h"
 
 //extern void handleTest();
@@ -156,7 +156,7 @@ static int create(WindowSettings settings,MenuDef* menuDefs,int menuCount) {
         return -1;
     }
     fprintf(stderr, "new window\n");
-    logf("new window");
+    goUILog("new window");
     GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     gtk_window_set_title((GtkWindow*)window, settings.title);
@@ -186,8 +186,8 @@ static int create(WindowSettings settings,MenuDef* menuDefs,int menuCount) {
 	//char path[255];
 	//strncpy(path, settings.dir, sizeof(path));
 	//strncat(path, settings.index, sizeof(path));
-	//logf("sizeof:%d",sizeof(path));
-	logf("url:%s",settings.url);
+	//goUILog("sizeof:%d",sizeof(path));
+	goUILog("url:%s",settings.url);
     webkit_web_view_load_uri(webview,settings.url);
 
     g_signal_connect(G_OBJECT(webview), "load-changed",
@@ -209,28 +209,18 @@ static int create(WindowSettings settings,MenuDef* menuDefs,int menuCount) {
 */
 import "C"
 
-import "unsafe"
-
-type window struct {
-}
-
-func (w *window) create(settings Settings, menuDefs []MenuDef) {
-	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
-	cs := convertSettings(settings)
-	cMenuDefs, count := convertMenuDefs(menuDefs)
+func cCreate(cs C.WindowSettings, cMenuDefs *C.MenuDef, count C.int) {
 	C.create(cs, cMenuDefs, count)
 }
 
-func (w *window) activate() {
+func cActivate() {
 
 }
 
-func (w *window) invokeJS(js string) {
-	cJs := C.CString(js)
-	defer C.free(unsafe.Pointer(cJs))
+func cInvokeJS(js *C.char) {
 	C.evalJS(cJs)
 }
 
-func (w *window) exit() {
+func cExit() {
 	C.exitApp()
 }

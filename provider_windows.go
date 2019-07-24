@@ -29,14 +29,14 @@ void exitApp() {
 */
 import "C"
 
-func createApp(cs C.WindowSettings, cMenuDefs *C.MenuDef, count C.int) {
+func cCreate(cs C.WindowSettings, cMenuDefs *C.MenuDef, count C.int) {
 	C.createApp(cs, cMenuDefs, count)
 }
 
-func invokeAppJS(js *C.char) {
+func cInvokeJS(js *C.char) {
 	C.invokeScript(js)
 }
 
-func exitApp() {
+func cExit() {
 	C.exitApp()
 }
