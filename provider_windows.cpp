@@ -1,3 +1,5 @@
+// +build ignore
+
 #define UNICODE
 
 #include <iostream>
@@ -8,7 +10,7 @@
 #include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.Web.UI.Interop.h>
-#include "../provider_windows.h"
+#include "provider_windows.h"
 
 #pragma comment(lib, "user32")
 #pragma comment(lib, "windowsapp")
@@ -27,27 +29,10 @@ fnHandleClientReq handleClientReq = nullptr;
 WebViewControl webView = nullptr;
 fnGoUILog fnLog = nullptr;
 
-/*static void printLog(const char *format, ...) {
-    if(fnLog != nullptr) {
-        fnLog();
-    }
-}*/
-
 static void goLog(const char* log) {
-    //printf("windows provider \n");
-    //printf(log);
     if(fnLog != nullptr) {
         fnLog(log);
     }
-}
-
-static void localLog(const char* log) {
-    printf("local log: %s\n",log);
-
-}
-
-static void localLog(hstring log) {
-    std::cout << log.c_str() << std::endl;
 }
 
 namespace {
@@ -60,29 +45,21 @@ namespace {
 		{
 		}
 
-		static void InitWebPath() {
-			char cwd[MAX_PATH];
-			_getcwd(cwd, MAX_PATH);
-			//localLog("cwd:%s");
-			//goLog(cwd);
-            goUILog("cwd:%s",cwd);
-			//webBase = Uri(winrt::to_hstring(cwd), L"web").Path();
-			webBase = winrt::to_hstring(cwd) + L"\\web";
-			goUILog("webBase:%s",webBase);
+		static void InitWebPath(const char* dir) {
+			wchar_t cwd[MAX_PATH];
+			//_getcwd(cwd, MAX_PATH);
+			GetModuleFileName(NULL, cwd, MAX_PATH);
+			webBase = Uri(winrt::to_hstring(cwd), winrt::to_hstring("web")).AbsoluteUri();
 		}
 
 		IAsyncOperation<IInputStream> UriToStreamAsync(Uri uri) const
 		{
-			Uri localUri = Uri(webBase + uri.Path());
+		    Uri localUri = Uri(webBase+uri.Path());
 			auto fOp = StorageFile::GetFileFromPathAsync(localUri.AbsoluteUri());
-			localLog("local uri:");
-			localLog(localUri.Path());
-			goUILog("local uri:%s",localUri.Path());
+
 			StorageFile f = fOp.get();
-			//goLog("got file");
 			auto sOp = f.OpenAsync(FileAccessMode::Read);
 			IRandomAccessStream stream = sOp.get();
-			//goLog("got stream");
 
 			co_return stream.GetInputStreamAt(0);
 		}
@@ -111,25 +88,27 @@ void resize() {
 }
 
 void invokeScript(const char* js) {
+    goUILog("invokeScript :%s",js);
 	webView.InvokeScriptAsync(
 		L"eval", single_threaded_vector<winrt::hstring>({ winrt::to_hstring(js) }));
 }
 
-void createWebView(const char* url) {
-    //goUILog("create webview:%s",url);
+void createWebView(const char* dir, const char* index) {
+    goUILog("create webview:%s",index);
 	init_apartment(winrt::apartment_type::single_threaded);
-	UriToStreamResolver::InitWebPath();
+	UriToStreamResolver::InitWebPath(dir);
 	WebViewControlProcess wvProcess = WebViewControlProcess();
 
 	auto op = wvProcess.CreateWebViewControlAsync(
 		reinterpret_cast<int64_t>(hWnd), getRect());
-	op.Completed([url](IAsyncOperation<WebViewControl> const& sender, AsyncStatus args) {
+	op.Completed([index](IAsyncOperation<WebViewControl> const& sender, AsyncStatus args) {
 		webView = sender.GetResults();
 		webView.Settings().IsScriptNotifyAllowed(true);
 		webView.IsVisible(true);
 
 		webView.ScriptNotify([](auto const& sender, auto const& args) {
 			if(handleClientReq != 0) {
+			    goUILog("handle Client Req");
 			    handleClientReq(to_string(args.Value()).c_str());
 			} else {
 			    goUILog("no handler");
@@ -140,12 +119,13 @@ void createWebView(const char* url) {
 		webView.NavigationStarting([](auto const& sender, auto const& args) {
 		});
 		*/
-		auto uri = webView.BuildLocalStreamUri(L"GoUI", winrt::to_hstring(url));
-		goUILog("uri:",uri.Path());
+		auto uri = webView.BuildLocalStreamUri(L"GoUI", winrt::to_hstring(index));
 		auto resolver = winrt::make_self<UriToStreamResolver>();
 		IUriToStreamResolver r = resolver.as<IUriToStreamResolver>();
 		webView.NavigateToLocalStreamUri(uri, r);
 
+        //Windows::Foundation::Uri uri{ L"ms-appx-web:///web/index.html" };
+        //webView.Navigate(uri);
 		});
 }
 
@@ -189,8 +169,6 @@ void createWebView2(HWND hWnd) {
 
 }*/
 
-
-
 void closeWindow() {
 	PostQuitMessage(0);
 }
@@ -227,11 +205,7 @@ void createWindow(WindowSettings settings) {
 	wce.cbClsExtra = 0;
 	wce.cbWndExtra = 0;
 	wce.hInstance = hInst;
-	//wce.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
-	//wce.hCursor = LoadCursor(NULL, IDC_ARROW);
-	//wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	//wce.lpszMenuName = NULL;
-	//wce.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
+
 	wce.lpszClassName = className;
 	check_bool(::RegisterClassExW(&wce));
 
@@ -277,36 +251,23 @@ void run() {
 }
 
  void __cdecl seLogger(fnGoUILog fn) {
-    std::cout << "set logger" << fn << std::endl;
     fnLog = fn;
  }
 
 void __cdecl setHandleClientReq(fnHandleClientReq fn) {
-    std::cout << "set client" << fn << std::endl;
     handleClientReq = fn;
-    std::cout << "after set" << handleClientReq << std::endl;
 }
 
 void __cdecl create(WindowSettings settings, MenuDef* menuDefs, int menuCount) {
-		goUILog("create:");
 		createWindow(settings);
-		createWebView(settings.url);
+		createWebView(settings.webDir, settings.index);
 		run();
-		//void* webviewPtr = (void*)(new GoUIWebView);
-		//GoUIWebView* webview = static_cast<GoUIWebView*>(webviewPtr);
-		//webview->create(settings, menuDefs, menuCount);
-		//return webviewPtr;
 }
 
 void __cdecl invokeJS(const char* js) {
 		invokeScript(js);
-		//GoUIWebView* webview = static_cast<GoUIWebView*>(webviewPtr);
-		//webviewinvokeScriptinvokeJS(js);
 }
 
 void __cdecl exitWebview() {
 		closeWindow();
-		//GoUIWebView* webview = static_cast<GoUIWebView*>(webviewPtr);
-		//webview->exitWindow();
-		//delete(webview);
 }

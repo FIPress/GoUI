@@ -12,7 +12,7 @@ window.goui = (function() {
 
             obj.success = function(data) {
                 if(options.success) {
-                    var data = {url:options.success,data:data};
+                    data = {url:options.success,data:data};
                     agent.invokeBackend(JSON.stringify(data));
                 }
             };
@@ -31,10 +31,10 @@ window.goui = (function() {
                 }
                 if (window.webkit) {
                     window.webkit.messageHandlers.goui.postMessage(data);
-                } else if (window.gouiHandler){
-                    window.gouiHandler.handleMessage(data);
-                } else {
-                    //todo: linux
+                } else if (window.gouiAndroid){
+                    window.gouiAndroid.handleMessage(data);
+                } else if(window.external) {
+                    window.external.notify(data);
                 }
 
             };
@@ -151,7 +151,7 @@ window.goui = (function() {
             req.error = "goui." + errorName;
         }
 
-        agent.invokeBackend(JSON.stringify(req));
+        agent.invokeBackend(req);
     };
 
     // service is to register a frontend service the backend can request
@@ -166,7 +166,6 @@ window.goui = (function() {
     //      error
     // }
     obj.handleRequest = function (options) {
-        //var ops = JSON.parse(options);
         var ctx = Context.create(options);
 
         if (!options || !options.url) {
@@ -181,7 +180,6 @@ window.goui = (function() {
         } else {
             ctx.error("Service not found: ", options.url)
         }
-
     };
 
     obj.escapeRegExp = function(text) {

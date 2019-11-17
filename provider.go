@@ -36,14 +36,8 @@ func convertSettings(settings Settings) C.WindowSettings {
 		}
 	}
 
-	//todo: linux, windows?
-	/*abs := ""
-	if !strings.HasPrefix(settings.Index, "http") {
-		abs, _ = filepath.Abs(settings.WebDir)
-
-		abs = "file://" + abs
-	}*/
-	Log("url:", settings.Url)
+	// windows needs WebDir and Index
+	// macOS and iOS need Url
 
 	return C.WindowSettings{C.CString(settings.Title),
 		C.CString(settings.WebDir),
@@ -71,15 +65,15 @@ func convertMenuDef(def MenuDef) (cMenuDef C.MenuDef) {
 }
 
 func convertMenuDefs(defs []MenuDef) (array *C.MenuDef, count C.int) {
-	len := len(defs)
-	if len == 0 {
+	l := len(defs)
+	if l == 0 {
 		return
 	}
 
-	count = C.int(len)
+	count = C.int(l)
 
 	array = C.allocMenuDefArray(count)
-	for i := 0; i < len; i++ {
+	for i := 0; i < l; i++ {
 		cMenuDef := convertMenuDef(defs[i])
 		C.addChildMenu(array, cMenuDef, C.int(i))
 	}

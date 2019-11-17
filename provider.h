@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-//#include "_cgo_export.h"
 
 typedef enum MenuType {
     container, //just a container item for sub items
@@ -16,7 +15,6 @@ typedef enum MenuType {
 typedef struct WindowSettings{
     const char* title;
     const char* webDir;
-    //const char* absPath;
     const char* index;
     const char* url;
     int left;
@@ -60,7 +58,6 @@ static void goUILog(const char *format, ...) {
 	if(len < bufSize) {
 		goLog(buf);
 	} else {
-		//char tempBuf[len+1];
 		len++;
 		char *tempBuf = 0;
 		tempBuf = (char *)malloc(sizeof(char)*len);
