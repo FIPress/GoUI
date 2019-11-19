@@ -1,10 +1,11 @@
-//+build windows
+// +build windows
+// +build dev prod
 
 package goui
 
 /*
-//set by Env CGO_LDFLAGS when build to get the real path of the dll
-//#cgo LDFLAGS: -static ${SRCDIR}/windows/provider_windows.dll
+// LDFLAGS will be set by Env CGO_LDFLAGS when build to get the real path of the dll
+// #cgo LDFLAGS: -static ${SRCDIR}/provider_windows.dll
 
 #include "provider_windows.h"
 #include "provider.h"

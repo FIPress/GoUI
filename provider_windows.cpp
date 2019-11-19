@@ -1,5 +1,11 @@
 // +build ignore
 
+// To build the windows provider, you will need to have the building env for c++/winrt.
+// Since CGO uses gcc for windows and does not support the VC++ compiler 'cl.exe'.
+// That's why there is a 'ignore' tag above.
+// The easiest way to build a GoUI windows app is through [GoUI-cli](https://github.com/FIPress/GoUI-cli)
+// You will find instructions to manually build the provider in the readme.
+
 #define UNICODE
 
 #include <iostream>
