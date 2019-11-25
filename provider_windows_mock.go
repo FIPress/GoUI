@@ -1,4 +1,4 @@
-// +build windows
+// +build windows,!dev,!prod
 
 package goui
 
