@@ -11,7 +11,7 @@ import (
 
 //export goLog
 func goLog(msg *C.char) {
-	s := fmt.Sprintln("go log: ", C.GoString(msg))
+	s := fmt.Sprintln(C.GoString(msg))
 	doLog(s)
 }
 
