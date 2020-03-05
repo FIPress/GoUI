@@ -306,6 +306,7 @@ static GoUIWindow* window;
 
         window = [[GoUIWindow alloc] init];
         [window create:settings];
+		goUILog("run loop");
         [NSApp run];
         //run();
         }
@@ -324,9 +325,16 @@ void create(WindowSettings settings, MenuDef* menuDefs, int menuCount) {
 	[GoUIApp start:settings menuDefs:menuDefs menuCount:menuCount];
 }
 
-void invokeJS(const char *js) {
-	goUILog("invokeJS:%s",js);
-	[GoUIApp evaluateJS:[NSString stringWithUTF8String:js]];
+void invokeJS(const char *js,int fromMainThread) {
+	goUILog("invokeJS async:%s",js);
+	NSString* script = [NSString stringWithUTF8String:js];
+	if(fromMainThread) {
+		[GoUIApp evaluateJS:script];
+	} else {
+		dispatch_async_and_wait(dispatch_get_main_queue(),^{
+			[GoUIApp evaluateJS:script];
+		});
+	}
 }
 
 void exitApp() {
@@ -343,8 +351,8 @@ func cActivate() {
 
 }
 
-func cInvokeJS(js *C.char) {
-	C.invokeJS(js)
+func cInvokeJS(js *C.char, fromMainThread C.int) {
+	C.invokeJS(js, fromMainThread)
 }
 
 func cExit() {

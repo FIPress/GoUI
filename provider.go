@@ -13,13 +13,20 @@ import (
 	"unsafe"
 )
 
-const defaultDir = "web"
+const defaultDir = "ui"
 const defaultIndex = "index.html"
+
+func BoolToCInt(b bool) (i C.int) {
+	if b {
+		i = 1
+	}
+	return
+}
 
 func convertSettings(settings Settings) C.WindowSettings {
 	//dir := path.Dir(settings.Url)
-	if settings.WebDir == "" {
-		settings.WebDir = defaultDir
+	if settings.UIDir == "" {
+		settings.UIDir = defaultDir
 	}
 
 	if settings.Index == "" {
@@ -27,7 +34,7 @@ func convertSettings(settings Settings) C.WindowSettings {
 	}
 
 	if settings.Url == "" {
-		settings.Url = path.Join(settings.WebDir, settings.Index)
+		settings.Url = path.Join(settings.UIDir, settings.Index)
 		if runtime.GOOS == "linux" {
 			wd, _ := os.Getwd()
 			settings.Url = path.Join("file://", wd, settings.Url)
@@ -40,7 +47,7 @@ func convertSettings(settings Settings) C.WindowSettings {
 	// macOS and iOS need Url
 
 	return C.WindowSettings{C.CString(settings.Title),
-		C.CString(settings.WebDir),
+		C.CString(settings.UIDir),
 		//C.CString(abs),
 		C.CString(settings.Index),
 		C.CString(settings.Url),
@@ -48,8 +55,8 @@ func convertSettings(settings Settings) C.WindowSettings {
 		C.int(settings.Top),
 		C.int(settings.Width),
 		C.int(settings.Height),
-		C.int(boolToInt(settings.Resizable)),
-		C.int(boolToInt(settings.Debug)),
+		BoolToCInt(settings.Resizable),
+		BoolToCInt(settings.Debug),
 	}
 }
 
@@ -81,13 +88,6 @@ func convertMenuDefs(defs []MenuDef) (array *C.MenuDef, count C.int) {
 	return
 }
 
-func boolToInt(b bool) (i int) {
-	if b {
-		i = 1
-	}
-	return
-}
-
 func create(settings Settings, menuDefs []MenuDef) {
 	//C.Create((*C.WindowSettings)(unsafe.Pointer(settings)))
 	cs := convertSettings(settings)
@@ -99,11 +99,12 @@ func activate() {
 
 }
 
-func invokeJS(js string) {
+func invokeJS(js string, fromMainThread bool) {
 	cJs := C.CString(js)
 	Log("invoke:", js)
 	defer C.free(unsafe.Pointer(cJs))
-	cInvokeJS(cJs)
+
+	cInvokeJS(cJs, BoolToCInt(fromMainThread))
 }
 
 func exit() {

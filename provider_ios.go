@@ -54,10 +54,10 @@ WKWebView *webView;
     [webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
 
     NSBundle *bundle = [NSBundle mainBundle];
-    NSString *path = [bundle pathForResource:@"web/index" ofType:@"html"];
+    NSString *path = [bundle pathForResource:@"ui/index" ofType:@"html"];
     NSURL *nsURL = [NSURL fileURLWithPath:path isDirectory:false];
     NSString *bundlePath = [[NSBundle mainBundle] resourcePath];
-    NSString *webPath = [bundlePath stringByAppendingString:@"/web"];
+    NSString *webPath = [bundlePath stringByAppendingString:@"/ui"];
     NSURL *nsDir = [NSURL fileURLWithPath:webPath isDirectory:true];
     NSLog(@"dir:%@",nsDir);
     [webView loadFileURL:nsURL allowingReadAccessToURL:nsDir];

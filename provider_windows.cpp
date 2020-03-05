@@ -55,7 +55,7 @@ namespace {
 			wchar_t cwd[MAX_PATH];
 			//_getcwd(cwd, MAX_PATH);
 			GetModuleFileName(NULL, cwd, MAX_PATH);
-			webBase = Uri(winrt::to_hstring(cwd), winrt::to_hstring("web")).AbsoluteUri();
+			webBase = Uri(winrt::to_hstring(cwd), winrt::to_hstring("ui")).AbsoluteUri();
 		}
 
 		IAsyncOperation<IInputStream> UriToStreamAsync(Uri uri) const

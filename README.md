@@ -1,5 +1,7 @@
 # GoUI
 
+> We are currently refactoring the project, and it is not ready to use. 
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/FIPress/GoUI)](https://goreportcard.com/report/github.com/FIPress/GoUI)
 
 [GoUI](https://fipress.org/project/goui) is a lightweight cross-platform Go "GUI" framework. It is not really a *GUI* library, instead, it displays things through web view. 
@@ -132,7 +134,7 @@ This is the GoUI version of "Hello world". It's pretty much a starting point for
 The project only contains 3 files.
 
 ```
-  ├─web
+  ├─ui
   | ├─css
   | |  └─index.css
   | ├─img

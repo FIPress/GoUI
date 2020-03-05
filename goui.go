@@ -23,7 +23,7 @@ import (
 // Settings is to configure the window's appearance
 type Settings struct {
 	Title     string //Title of the application window
-	WebDir    string //Directory of the web related files, default: "web"
+	UIDir     string //Directory of the UI/Web related files, default: "ui"
 	Index     string //Index html file, default: "index.html"
 	Url       string //Full url address if you don't use WebDir + Index
 	Left      int
@@ -32,6 +32,10 @@ type Settings struct {
 	Height    int
 	Resizable bool
 	Debug     bool
+}
+
+type Widget interface {
+	Register()
 }
 
 //as goui designed to support only single-page application, it is reasonable to hold a window globally
@@ -59,6 +63,12 @@ func Service(url string, handler func(*Context)) {
 	parseRoute(url, route)
 }
 
+func RegisterWidgets(widgets ...Widget) {
+	for _, w := range widgets {
+		w.Register()
+	}
+}
+
 type JSServiceOptions struct {
 	Url     string      `json:"url"`
 	Data    interface{} `json:"data"`
@@ -66,14 +76,25 @@ type JSServiceOptions struct {
 	Error   string      `json:"error"`
 }
 
-// RequestJSService is to send a request to the front end
+// RequestJSService is to send a request to the front end from the main thread
 func RequestJSService(options JSServiceOptions) (err error) {
 	ops, err := json.Marshal(options)
 	if err != nil {
 		return
 	}
 
-	invokeJS("goui.handleRequest(" + string(ops) + ")")
+	invokeJS("goui.handleRequest("+string(ops)+")", true)
+	return
+}
+
+// RequestJSServiceFromBackground is to send a request to the front end from a background thread
+func RequestJSServiceFromBackground(options JSServiceOptions) (err error) {
+	ops, err := json.Marshal(options)
+	if err != nil {
+		return
+	}
+
+	invokeJS("goui.handleRequest("+string(ops)+")", false)
 	return
 }
 

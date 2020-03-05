@@ -1,0 +1,50 @@
+body {
+    box-sizing: border-box;
+    color: #555555;
+    margin:0;
+    background-color: azure ;
+}
+
+img {
+    width: 100%;
+}
+
+.center {
+    text-align: center;
+}
+
+#box {
+    width:25em;
+    margin: 0 auto;
+}
+
+#logo {
+    width: 10em;
+    margin: 1em auto .3em auto;
+}
+
+#btn,#result {
+    margin: .4em 1em;
+    border: 1px solid #21a823;
+    border-radius: .3em;
+}
+
+#btn {
+    width: 16em;
+
+    font: inherit;
+    padding: .5em 2em;
+    color: #eeeeee;
+    background-color: #19a823;
+}
+
+#result {
+    width: 15em;
+    height: 15em;
+    resize: none;
+    padding: .5em;
+    font-size: 1em;
+    line-height: 1.5em;
+    color: #333333;
+    background-color: #efefef;
+}
