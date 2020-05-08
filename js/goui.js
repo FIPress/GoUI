@@ -1,19 +1,27 @@
 window.goui = (function() {
-    var Context = {
+    let obj = {};
+    let invokeBackend;
+
+    let osConsts = {
+        linux:{pathSeparator:'/',pathListSeparator:':'},
+        windows:{pathSeparator:'\\',pathListSeparator: ';'}
+    };
+
+    let Context = {
         create: function (options) {
-            var obj = {};
+            let obj = {};
 
             obj.error = function (msg) {
                 if(options.error) {
-                    var data = {url:options.error,data:msg};
-                    agent.invokeBackend(JSON.stringify(data));
+                    let data = {url:options.error,data:msg};
+                    invokeBackend(data);
                 }
             };
 
             obj.success = function(data) {
                 if(options.success) {
                     data = {url:options.success,data:data};
-                    agent.invokeBackend(JSON.stringify(data));
+                    invokeBackend(data);
                 }
             };
 
@@ -21,43 +29,20 @@ window.goui = (function() {
         }
     };
 
-    var Agent = {
+    let Router = {
         create: function () {
-            var obj = {};
+            let obj = {};
 
-            obj.invokeBackend = function (data) {
-                if(typeof data === 'object') {
-                    data = JSON.stringify(data);
-                }
-                if (window.webkit) {
-                    window.webkit.messageHandlers.goui.postMessage(data);
-                } else if (window.gouiAndroid){
-                    window.gouiAndroid.handleMessage(data);
-                } else if(window.external) {
-                    window.external.notify(data);
-                }
+            let parsedRoutes = [];
 
-            };
+            let optionalParam = /\((.*?)\)/g;
+            let namedParam = /(\(\?)?:\w+/g;
+            let splatParam = /\*\w+/g;
+            let escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
 
-            return obj;
-        }
-    };
+            let routeStripper = /^[#\/]|\s+$/g;
 
-
-    var Router = {
-        create: function () {
-            var obj = {};
-
-            var parsedRoutes = [];
-
-            var optionalParam = /\((.*?)\)/g;
-            var namedParam = /(\(\?)?:\w+/g;
-            var splatParam = /\*\w+/g;
-            var escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
-
-            var routeStripper = /^[#\/]|\s+$/g;
-
-            var pathToRegExp = function (path) {
+            let pathToRegExp = function (path) {
                 path = path.replace(escapeRegExp, '\\$&')
                     .replace(optionalParam, '(?:$1)?')
                     .replace(namedParam, function (match, optional) {
@@ -91,15 +76,29 @@ window.goui = (function() {
         }
     };
 
-    var obj = {};
+    if (window.webkit) {
+        obj.os = osConsts.linux ;
+        invokeBackend = function(data) {
+            window.webkit.messageHandlers.goui.postMessage(JSON.stringify(data));
+        };
+    } else if (window.gouiAndroid){
+        obj.os = osConsts.linux ;
+        invokeBackend = function(data) {
+            window.gouiAndroid.handleMessage(JSON.stringify(data));
+        };
+    } else if(window.external) {
+        obj.os = osConsts.windows ;
+        invokeBackend = function(data) {
+            window.external.notify(JSON.stringify(data));
+        };
+    }
 
-    var agent = Agent.create();
-    var router = Router.create();
+    let router = Router.create();
 
-    var seq = 0;
+    let seq = 0;
 
-    var getName = function () {
-        var name = "f" + seq;
+    let getName = function () {
+        let name = "f" + seq;
         seq++;
         return name;
     };
@@ -151,7 +150,7 @@ window.goui = (function() {
             req.error = "goui." + errorName;
         }
 
-        agent.invokeBackend(req);
+        invokeBackend(req);
     };
 
     // service is to register a frontend service the backend can request
