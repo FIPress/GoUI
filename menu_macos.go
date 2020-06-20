@@ -1,0 +1,6 @@
+package goui
+
+/*
+
+ */
+import "C"

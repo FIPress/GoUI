@@ -1,66 +1,48 @@
 window.goui = (function() {
+    let obj = {};
+    let invokeBackend;
 
-    var Context = {
+    let osConsts = {
+        linux:{pathSeparator:'/',pathListSeparator:':'},
+        windows:{pathSeparator:'\\',pathListSeparator: ';'}
+    };
+
+    let Context = {
         create: function (options) {
-            var obj = {};
+            let obj = {};
 
             obj.error = function (msg) {
                 if(options.error) {
-                    var data = {url:options.error,data:msg};
-                    agent.invokeBackend(JSON.stringify(data));
+                    let data = {url:options.error,data:msg};
+                    invokeBackend(data);
                 }
             };
 
             obj.success = function(data) {
                 if(options.success) {
-                    var data = {url:options.success,data:data};
-                    agent.invokeBackend(JSON.stringify(data));
+                    data = {url:options.success,data:data};
+                    invokeBackend(data);
                 }
-            }
+            };
 
             return obj;
         }
-    }
+    };
 
-    var Agent = {
+    let Router = {
         create: function () {
-            var obj = {};
-            
-            obj.invokeBackend = function (data) {
-                if(typeof data === 'object') {
-                    data = JSON.stringify(data);
-                }
-                if (window.webkit) {
-                    window.webkit.messageHandlers.goui.postMessage(data);
-                } else if (1==2){
-                    //todo: windows
-                } else {
-                    //todo: linux
-                }
+            let obj = {};
 
-            }
+            let parsedRoutes = [];
 
+            let optionalParam = /\((.*?)\)/g;
+            let namedParam = /(\(\?)?:\w+/g;
+            let splatParam = /\*\w+/g;
+            let escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
 
+            let routeStripper = /^[#\/]|\s+$/g;
 
-            return obj;
-        }
-    }
-
-
-    var Router = {
-        create: function () {
-            var obj = {};
-
-            var parsedRoutes = [];
-
-            var optionalParam = /\((.*?)\)/g;
-            var namedParam = /(\(\?)?:\w+/g;
-            var splatParam = /\*\w+/g;
-            var escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
-
-            var routeStripper = /^[#\/]|\s+$/g;
-
-            var pathToRegExp = function (path) {
+            let pathToRegExp = function (path) {
                 path = path.replace(escapeRegExp, '\\$&')
                     .replace(optionalParam, '(?:$1)?')
                     .replace(namedParam, function (match, optional) {
@@ -75,7 +57,7 @@ window.goui = (function() {
                 route.regexp = pathToRegExp(path);
                 route.handler = handler;
                 parsedRoutes.push(route);
-            }
+            };
 
             obj.dispatch = function (url) {
                 var matched;
@@ -86,23 +68,37 @@ window.goui = (function() {
                         matched = route;
                         return true;
                     }
-                })
+                });
                 return matched;
-            }
+            };
 
             return obj;
         }
+    };
+
+    if (window.webkit) {
+        obj.os = osConsts.linux ;
+        invokeBackend = function(data) {
+            window.webkit.messageHandlers.goui.postMessage(JSON.stringify(data));
+        };
+    } else if (window.gouiAndroid){
+        obj.os = osConsts.linux ;
+        invokeBackend = function(data) {
+            window.gouiAndroid.handleMessage(JSON.stringify(data));
+        };
+    } else if(window.external) {
+        obj.os = osConsts.windows ;
+        invokeBackend = function(data) {
+            window.external.notify(JSON.stringify(data));
+        };
     }
 
-    var obj = {};
+    let router = Router.create();
 
-    var agent = Agent.create();
-    var router = Router.create();
+    let seq = 0;
 
-    var seq = 0;
-
-    var getName = function () {
-        var name = "f" + seq;
+    let getName = function () {
+        let name = "f" + seq;
         seq++;
         return name;
     };
@@ -154,22 +150,21 @@ window.goui = (function() {
             req.error = "goui." + errorName;
         }
 
-        agent.invokeBackend(JSON.stringify(req));
-    }
+        invokeBackend(req);
+    };
 
     // service is to register a frontend service the backend can request
     obj.service = function (path,handler) {
         router.parse(path,handler);
-    }
+    };
 
     //options: {
-        //      url,
-        //      data,
-        //      success,
-        //      error
-        // }
+    //      url,
+    //      data,
+    //      success,
+    //      error
+    // }
     obj.handleRequest = function (options) {
-        //var ops = JSON.parse(options);
         var ctx = Context.create(options);
 
         if (!options || !options.url) {
@@ -184,12 +179,11 @@ window.goui = (function() {
         } else {
             ctx.error("Service not found: ", options.url)
         }
-
     };
 
     obj.escapeRegExp = function(text) {
         return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-    }
+    };
 
 
     return obj;

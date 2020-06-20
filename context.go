@@ -3,6 +3,7 @@ package goui
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strconv"
 )
 
@@ -13,10 +14,13 @@ type Context struct {
 	params          map[string]string
 }
 
-func (ctx *Context) GetParam(name string) string {
-	return ctx.params[name]
+// GetParam get a string parameter from the url
+func (ctx *Context) GetParam(name string) (val string) {
+	val, _ = url.PathUnescape(ctx.params[name])
+	return
 }
 
+// GetBoolParam get a bool parameter from the url
 func (ctx *Context) GetBoolParam(name string) (b bool, err error) {
 	str := ctx.GetParam(name)
 	b, err = strconv.ParseBool(str)
@@ -26,6 +30,7 @@ func (ctx *Context) GetBoolParam(name string) (b bool, err error) {
 	return
 }
 
+// GetIntParam get a int parameter from the url
 func (ctx *Context) GetIntParam(name string) (i int, err error) {
 	str := ctx.GetParam(name)
 	i, err = strconv.Atoi(str)
@@ -35,6 +40,18 @@ func (ctx *Context) GetIntParam(name string) (i int, err error) {
 	return
 }
 
+func (ctx *Context) GetIntParamOr(name string, defaultVal int) (i int) {
+	str := ctx.GetParam(name)
+	var err error
+	i, err = strconv.Atoi(str)
+	if err != nil {
+		i = defaultVal
+	}
+	return
+
+}
+
+// GetFloatParam get a float parameter from the url
 func (ctx *Context) GetFloatParam(name string) (f float64, err error) {
 	str := ctx.GetParam(name)
 	f, err = strconv.ParseFloat(str, 32)
@@ -44,6 +61,7 @@ func (ctx *Context) GetFloatParam(name string) (f float64, err error) {
 	return
 }
 
+// GetParam get an entity from the requested data
 func (ctx *Context) GetEntity(v interface{}) (err error) {
 	err = json.Unmarshal([]byte(ctx.Data), v)
 	if err != nil {

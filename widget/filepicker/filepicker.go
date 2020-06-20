@@ -6,7 +6,7 @@ package filepicker
 import "C"
 import goui "github.com/fipress/GoUI"
 
-type FilePickerSettings struct {
+type Settings struct {
 	IsSave               bool   `json:"isSave"` //save or open, default to open
 	Title                string `json:"title"`
 	Message              string `json:"message"`
@@ -34,8 +34,8 @@ func BoolToCInt(b bool) (i C.int) {
 }
 
 /*
-func convertSettings(settings *FilePickerSettings) C.FilePickerSettings {
-	return C.FilePickerSettings{C.CString(settings.Message),
+func convertSettings(settings *Settings) C.Settings {
+	return C.Settings{C.CString(settings.Message),
 		C.CString(settings.AllowedFileTypes),
 		C.CString(settings.StartLocation),
 		C.CString(settings.SuggestedFileName),
@@ -53,7 +53,7 @@ type FilePicker struct {
 
 func (f *FilePicker) Register() {
 	goui.Service("filepicker", func(context *goui.Context) {
-		s := new(FilePickerSettings)
+		s := new(Settings)
 		err := context.GetEntity(&s)
 		if err != nil {
 			goui.Logf("Get filepicker settings failed:", err.Error())

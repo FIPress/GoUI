@@ -89,7 +89,7 @@ char* saveFilePicker(FilePickerSettings s) {
 */
 import "C"
 
-func toCocoaSettings(settings *FilePickerSettings) C.FilePickerSettings {
+func toCocoaSettings(settings *Settings) C.FilePickerSettings {
 	return C.FilePickerSettings{C.CString(settings.Title),
 		C.CString(settings.Message),
 		C.CString(settings.Accept),
@@ -104,7 +104,7 @@ func toCocoaSettings(settings *FilePickerSettings) C.FilePickerSettings {
 	}
 }
 
-func openFilePicker(settings *FilePickerSettings) string {
+func openFilePicker(settings *Settings) string {
 	//var cPath C.CString
 	//var cPath string
 	s := toCocoaSettings(settings)

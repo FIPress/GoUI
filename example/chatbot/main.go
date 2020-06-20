@@ -30,9 +30,9 @@ func resetTimer() {
 		select {
 		case <-timer.C:
 			println("timeout")
-			goui.RequestJSService(goui.JSServiceOptions{
+			goui.RequestJSServiceFromBackground(goui.JSServiceOptions{
 				Url: "chat/" + knock,
-			}, false)
+			})
 			resetTimer()
 		}
 	}()
@@ -49,7 +49,7 @@ func chatService(ctx *goui.Context) {
 		ctx.Success(greetings)
 		goui.RequestJSService(goui.JSServiceOptions{
 			Url: "chat/" + greetings,
-		}, true)
+		})
 	case strings.HasSuffix(msg, "?"):
 		ctx.Success(truth)
 	default:

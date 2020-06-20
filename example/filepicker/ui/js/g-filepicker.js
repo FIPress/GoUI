@@ -5,6 +5,20 @@ class GoUIFilePicker extends HTMLElement {
 
     constructor() {
         super();
+
+        this.settings = {
+            //isSave: false,
+            //message: "",
+            //fileTypes: "",
+            //startLocation:"",
+            //suggestedFilename:"",
+            //multiple:false,
+            //fileOnly:false,
+            //dirOnly:false,
+            //allowsOtherFileTypes:false,
+            //canCreateDir:false,
+            //showsHiddenFiles:false,
+        };
     }
 
     get editable() {
@@ -17,16 +31,23 @@ class GoUIFilePicker extends HTMLElement {
     }
 
     set accept(v) {
-        this.fileBtn.setAttribute("accept",v);
+        //this.fileBtn.setAttribute("accept",v);
+        this.settings.accept = v;
     }
 
     set multiple(v) {
         const isMulti = Boolean(v);
-        this.fileBtn.setAttribute("multiple",v);
+        //this.fileBtn.setAttribute("multiple",v);
+        this.settings.multiple = isMulti;
+    }
+
+    set action(v) {
+        this.settings.isSave = v == "save";
     }
 
     get value() {
-        return this.fileBtn.value;
+        //return this.fileBtn.value;
+        return this.editor.value;
     }
 
     set value(v) {
@@ -34,7 +55,8 @@ class GoUIFilePicker extends HTMLElement {
     }
 
     get files() {
-        return this.fileBtn.files;
+        //split
+        return this.editor.value;
     }
 
     connectedCallback() {
@@ -72,11 +94,16 @@ class GoUIFilePicker extends HTMLElement {
         shadow.appendChild(wrapper);
         this.appendChild(el);
 
-        var _this=this;
+        let _this=this;
 
         this.btn.onclick = function() {
-            console.log("request goui service");
-        }
+            //console.log("request goui service");
+            goui.request({url:"filepicker",
+                data:_this.settings,
+                success:function(path) {
+                    _this.editor.value = path;
+                }});
+        };
 
 
         if(this.hasAttribute("style")) {
@@ -89,15 +116,19 @@ class GoUIFilePicker extends HTMLElement {
         }
 
         if(this.hasAttribute("multiple")) {
-            _this.fileBtn.setAttribute("multiple",this.getAttribute("multiple"));
+            //_this.fileBtn.setAttribute("multiple",this.getAttribute("multiple"));
+            const isMulti = Boolean(this.getAttribute("multiple"));
+            //this.fileBtn.setAttribute("multiple",v);
+            _this.settings.multiple = isMulti;
         }
 
         if(this.hasAttribute("accept")) {
-            _this.fileBtn.setAttribute("accept",this.getAttribute("accept"));
+            //_this.fileBtn.setAttribute("accept",this.getAttribute("accept"));
+            _this.settings.accept = this.getAttribute("accept");
         }
 
-        if(this.hasAttribute("capture")) {
-            _this.fileBtn.setAttribute("capture",this.getAttribute("capture"));
+        if(this.hasAttribute("action")) {
+            _this.settings.isSave = this.getAttribute("action") == "save";
         }
 
         const readonly = !this.getAttribute("editable");
@@ -114,8 +145,7 @@ class GoUIFilePicker extends HTMLElement {
         }
     }
 
-
 }
 
 // Define the new element
-customElements.define('g-filePicker', GoUIFilePicker);
+customElements.define('g-filepicker', GoUIFilePicker);

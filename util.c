@@ -1,15 +1,8 @@
-#pragma once
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-
+#include "util.h"
 extern void goLog(const char *s);
-
 static const int bufSize = 512;
 
-static void goUILog(const char *format, ...) {
+inline void goUILog(const char *format, ...) {
 	char buf[bufSize];
 	va_list args;
     va_start(args,format);
@@ -28,8 +21,4 @@ static void goUILog(const char *format, ...) {
 		}
 	}
 	va_end(args);
-}
-
-static inline int notEmpty(const char* s) {
-    return s!=0 && strlen(s)!=0;
 }
